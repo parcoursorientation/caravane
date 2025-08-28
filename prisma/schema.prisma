@@ -1,0 +1,385 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider      = "prisma-client-js"
+  // ajoute plusieurs cibles Linux pour couvrir ton hébergeur
+  binaryTargets = ["native", "linux-musl", "debian-openssl-1.1.x", "debian-openssl-3.0.x", "rhel-openssl-1.1.x", "rhel-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  password  String
+  role      Role     @default(ADMIN)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+model Lycee {
+  id          String    @id @default(cuid())
+  nom         String
+  adresse     String
+  type        TypeLycee @default(PUBLIC)
+  description String?
+  logo        String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  evenements Evenement[]
+  programmes ProgrammeLycee[]
+
+  @@map("lycees")
+}
+
+model Exposant {
+  id             String         @id @default(cuid())
+  nom            String
+  description    String
+  domaine        String
+  logo           String?
+  siteWeb        String?
+  statutPaiement StatutPaiement @default(EN_ATTENTE)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  evenementExposants EvenementExposant[]
+  programmes         ProgrammeExposant[]
+  contacts           ContactExposant[]
+
+  @@map("exposants")
+}
+
+model Evenement {
+  id         String    @id @default(cuid())
+  nom        String?
+  date       DateTime
+  dateDebut  DateTime?
+  dateFin    DateTime?
+  heureDebut String // Format HH:MM (ex: "09:00")
+  heureFin   String // Format HH:MM (ex: "17:00")
+  ville      String? // Nouveau champ pour la ville
+  lyceeId    String
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  lycee              Lycee               @relation(fields: [lyceeId], references: [id], onDelete: Cascade)
+  evenementExposants EvenementExposant[]
+  medias             Media[]
+  galerie            Galerie?
+  inscriptions       Inscription[]
+  convocations       Convocation[]
+
+  @@map("evenements")
+}
+
+model EvenementExposant {
+  id          String   @id @default(cuid())
+  evenementId String
+  exposantId  String
+  createdAt   DateTime @default(now())
+
+  evenement Evenement @relation(fields: [evenementId], references: [id], onDelete: Cascade)
+  exposant  Exposant  @relation(fields: [exposantId], references: [id], onDelete: Cascade)
+
+  @@unique([evenementId, exposantId])
+  @@map("evenement_exposants")
+}
+
+model Media {
+  id          String    @id @default(cuid())
+  titre       String
+  description String?
+  fichier     String
+  type        MediaType @default(PHOTO)
+  categorie   String?
+  evenementId String?
+  galerieId   String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  evenement Evenement? @relation(fields: [evenementId], references: [id])
+  galerie   Galerie?   @relation(fields: [galerieId], references: [id])
+
+  @@map("medias")
+}
+
+model Galerie {
+  id          String   @id @default(cuid())
+  titre       String
+  description String?
+  evenementId String   @unique
+  maxImages   Int      @default(10)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  evenement Evenement @relation(fields: [evenementId], references: [id], onDelete: Cascade)
+  medias    Media[]
+
+  @@map("galeries")
+}
+
+model CompteARebours {
+  id          String    @id @default(cuid())
+  titre       String
+  description String?
+  lieu        String?
+  ville       String?
+  dateCible   DateTime
+  dateDebut   DateTime?
+  dateFin     DateTime?
+  actif       Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("compte_a_rebours")
+}
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  nom       String
+  email     String
+  message   String
+  lu        Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("contact_messages")
+}
+
+model Inscription {
+  id              String            @id @default(cuid())
+  nom             String
+  prenom          String
+  email           String
+  telephone       String
+  evenementId     String
+  typeParticipant String
+  etablissement   String?
+  niveau          String?
+  branche         String?
+  interets        String?
+  message         String?
+  statut          StatutInscription @default(EN_ATTENTE)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  evenement Evenement @relation(fields: [evenementId], references: [id], onDelete: Cascade)
+
+  @@map("inscriptions")
+}
+
+model ProgrammeExposant {
+  id          String        @id @default(cuid())
+  titre       String
+  description String
+  heure       String // Format HH:MM (ex: "09:00")
+  duree       String // Format texte (ex: "30 min", "1h", "1h30")
+  lieu        String
+  type        TypeProgramme @default(PRESENTATION)
+  public      String
+  animateur   String
+  exposantId  String
+  ordre       Int           @default(0)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  exposant Exposant @relation(fields: [exposantId], references: [id], onDelete: Cascade)
+
+  @@map("programme_exposants")
+}
+
+model ProgrammeLycee {
+  id          String             @id @default(cuid())
+  titre       String
+  description String
+  heure       String // Format HH:MM (ex: "09:00")
+  duree       String // Format texte (ex: "30 min", "1h", "1h30")
+  lieu        String
+  type        TypeProgrammeLycee @default(PRESENTATION)
+  public      String
+  animateur   String
+  lyceeId     String
+  ordre       Int                @default(0)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  lycee Lycee @relation(fields: [lyceeId], references: [id], onDelete: Cascade)
+
+  @@map("programme_lycees")
+}
+
+model ContactExposant {
+  id         String        @id @default(cuid())
+  nom        String
+  prenom     String
+  email      String        @unique
+  telephone  String?
+  fonction   String?
+  entreprise String?
+  exposantId String?
+  statut     StatutContact @default(ACTIF)
+  notes      String?
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  exposant      Exposant?                 @relation(fields: [exposantId], references: [id])
+  convocations  Convocation[]
+  destinataires ConvocationDestinataire[]
+
+  @@map("contact_exposants")
+}
+
+model Convocation {
+  id            String      @id @default(cuid())
+  sujet         String
+  message       String
+  dateEnvoi     DateTime    @default(now())
+  statutEnvoi   StatutEnvoi @default(EN_ATTENTE)
+  dateEnvoiReel DateTime?
+  erreurEnvoi   String?
+  evenementId   String
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  evenement     Evenement                 @relation(fields: [evenementId], references: [id], onDelete: Cascade)
+  destinataires ConvocationDestinataire[]
+  contacts      ContactExposant[]
+
+  @@map("convocations")
+}
+
+model ConvocationDestinataire {
+  id            String             @id @default(cuid())
+  convocationId String
+  contactId     String
+  statut        StatutDestinataire @default(EN_ATTENTE)
+  dateOuverture DateTime?
+  dateReponse   DateTime?
+  reponse       String?
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+
+  convocation Convocation     @relation(fields: [convocationId], references: [id], onDelete: Cascade)
+  contact     ContactExposant @relation(fields: [contactId], references: [id], onDelete: Cascade)
+
+  @@unique([convocationId, contactId])
+  @@map("convocation_destinataires")
+}
+
+model Partenaire {
+  id          String           @id @default(cuid())
+  nom         String
+  type        TypePartenaire   @default(ORGANISATEUR)
+  description String?
+  logo        String?
+  siteWeb     String?
+  email       String?
+  telephone   String?
+  adresse     String?
+  ville       String?
+  pays        String?
+  statut      StatutPartenaire @default(ACTIF)
+  ordre       Int              @default(0)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@map("partenaires")
+}
+
+enum TypeProgrammeLycee {
+  ACCUEIL
+  PRESENTATION
+  VISITE
+  ATELIER
+  RENCONTRE
+  REPAS
+  DEMONSTRATION
+  FORUM
+  INFORMATION
+  CLOTURE
+}
+
+enum Role {
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum TypeLycee {
+  PUBLIC
+  PRIVE
+}
+
+enum StatutPaiement {
+  PAYE
+  EN_ATTENTE
+}
+
+enum MediaType {
+  PHOTO
+  VIDEO
+  DOCUMENT
+}
+
+enum TypePartenaire {
+  ORGANISATEUR
+  PARTENAIRE
+  SPONSOR
+  MEDIA
+  INSTITUTION
+}
+
+enum StatutPartenaire {
+  ACTIF
+  INACTIF
+  EN_ATTENTE
+}
+
+enum StatutInscription {
+  EN_ATTENTE
+  CONFIRMEE
+  ANNULEE
+}
+
+enum StatutContact {
+  ACTIF
+  INACTIF
+  EN_ATTENTE
+}
+
+enum StatutEnvoi {
+  EN_ATTENTE
+  ENVOYE
+  EN_ERREUR
+  ANNULE
+}
+
+enum StatutDestinataire {
+  EN_ATTENTE
+  ENVOYE
+  OUVERT
+  REPONDU
+  ERREUR
+}
+
+enum TypeProgramme {
+  PRESENTATION
+  ATELIER
+  TEMOIGNAGE
+  VISITE
+  DEMONSTRATION
+  ENTRETIEN
+  PARTENARIAT
+  CLOTURE
+}

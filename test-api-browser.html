@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test API Exposants</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .error {
+            color: red;
+            background: #ffebee;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success {
+            color: green;
+            background: #e8f5e8;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .data {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+        .exposant-item {
+            border-bottom: 1px solid #ddd;
+            padding: 10px 0;
+        }
+        .exposant-item:last-child {
+            border-bottom: none;
+        }
+        .status {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status.confirme {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status.attente {
+            background: #fff3cd;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Test API Exposants</h1>
+        
+        <button class="btn" onclick="testAPI()">Tester l'API Exposants</button>
+        <button class="btn" onclick="clearResults()">Effacer les résultats</button>
+        
+        <div id="results"></div>
+        
+        <div class="data">
+            <h3>Debug Information:</h3>
+            <div id="debug"></div>
+        </div>
+    </div>
+
+    <script>
+        function updateDebug(message) {
+            const debugDiv = document.getElementById('debug');
+            debugDiv.innerHTML += '<div>' + new Date().toLocaleTimeString() + ': ' + message + '</div>';
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+            document.getElementById('debug').innerHTML = '';
+        }
+
+        async function testAPI() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<div>Test en cours...</div>';
+            
+            updateDebug('Début du test API');
+            
+            try {
+                // Check localStorage
+                updateDebug('Vérification du localStorage...');
+                const token = localStorage.getItem('adminToken');
+                updateDebug('Token trouvé: ' + (token ? 'Oui' : 'Non'));
+                
+                if (!token) {
+                    // Use a fake token for testing
+                    const fakeToken = 'Bearer test-token-12345';
+                    updateDebug('Utilisation d\'un token de test: ' + fakeToken);
+                    testWithToken(fakeToken);
+                } else {
+                    updateDebug('Utilisation du token existant');
+                    testWithToken(token);
+                }
+                
+            } catch (error) {
+                updateDebug('Erreur: ' + error.message);
+                resultsDiv.innerHTML = '<div class="error">Erreur: ' + error.message + '</div>';
+            }
+        }
+
+        async function testWithToken(token) {
+            const resultsDiv = document.getElementById('results');
+            
+            try {
+                updateDebug('Appel API: /api/admin/exposants');
+                
+                const response = await fetch('/api/admin/exposants', {
+                    headers: {
+                        'Authorization': token
+                    }
+                });
+                
+                updateDebug('Status HTTP: ' + response.status);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    updateDebug('Réponse JSON reçue');
+                    updateDebug('Nombre d\'exposants: ' + (data.data ? data.data.length : 0));
+                    
+                    // Display results
+                    let html = '<div class="success">✅ API test réussi!</div>';
+                    html += '<div class="data">';
+                    html += '<h3>Résultats (' + data.data.length + ' exposants):</h3>';
+                    
+                    data.data.forEach(exposant => {
+                        html += '<div class="exposant-item">';
+                        html += '<strong>' + exposant.nom + '</strong><br>';
+                        html += '<em>' + exposant.domaine + '</em><br>';
+                        html += '<span class="status ' + (exposant.statutConfirmation === 'CONFIRME' ? 'confirme' : 'attente') + '">';
+                        html += exposant.statutConfirmation === 'CONFIRME' ? 'Confirmé' : 'En attente';
+                        html += '</span><br>';
+                        html += '<small>ID: ' + exposant.id + '</small>';
+                        html += '</div>';
+                    });
+                    
+                    html += '</div>';
+                    html += '<div class="data">';
+                    html += '<h3>Structure des données:</h3>';
+                    html += '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                    html += '</div>';
+                    
+                    resultsDiv.innerHTML = html;
+                    
+                    updateDebug('Affichage des résultats terminé');
+                    
+                } else {
+                    const errorText = await response.text();
+                    updateDebug('Erreur API: ' + errorText);
+                    resultsDiv.innerHTML = '<div class="error">❌ Erreur API: ' + response.status + ' - ' + errorText + '</div>';
+                }
+                
+            } catch (error) {
+                updateDebug('Erreur réseau: ' + error.message);
+                resultsDiv.innerHTML = '<div class="error">❌ Erreur réseau: ' + error.message + '</div>';
+            }
+        }
+
+        // Auto-test on page load
+        window.onload = function() {
+            updateDebug('Page chargée');
+            updateDebug('User Agent: ' + navigator.userAgent);
+            updateDebug('URL: ' + window.location.href);
+        };
+    </script>
+</body>
+</html>
