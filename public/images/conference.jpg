@@ -1,0 +1,9 @@
+<svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
+  <rect width="100%" height="100%" fill="#f3f4f6"/>
+  <rect x="50" y="50" width="700" height="500" fill="#e5e7eb" stroke="#d1d5db" stroke-width="2"/>
+  <text x="400" y="280" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" fill="#6b7280">Image de Conférence</text>
+  <text x="400" y="320" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#9ca3af">Placeholder - 800x600</text>
+  <circle cx="200" cy="200" r="30" fill="#3b82f6"/>
+  <circle cx="400" cy="200" r="30" fill="#10b981"/>
+  <circle cx="600" cy="200" r="30" fill="#f59e0b"/>
+</svg>

@@ -1,24 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
-import bcrypt from 'bcryptjs';
-
-// Utilisateurs admin de démonstration
-// Dans un environnement réel, ces utilisateurs viendraient de la base de données
-const adminUsers = [
-  {
-    id: "1",
-    email: "admin@atlantisevents.ma",
-    password: "$2b$10$NBB9VTseBaXv/l/q0MVDQ.dTg0Pykax4fK67.ORcvTco59C2.pwCu", // "admin123" hashé
-    name: "Administrateur",
-    role: "SUPER_ADMIN"
-  },
-  {
-    id: "2", 
-    email: "staff@atlantisevents.ma",
-    password: "$2b$10$NBB9VTseBaXv/l/q0MVDQ.dTg0Pykax4fK67.ORcvTco59C2.pwCu", // "admin123" hashé
-    name: "Staff",
-    role: "ADMIN"
-  }
-];
+import { NextRequest, NextResponse } from "next/server";
+import bcrypt from "bcryptjs";
+import { db } from "@/lib/db";
 
 interface LoginRequest {
   email: string;
@@ -27,22 +9,25 @@ interface LoginRequest {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json() as LoginRequest;
+    const body = (await request.json()) as LoginRequest;
     const { email, password } = body;
 
     // Validation des entrées
     if (!email || !password) {
       return NextResponse.json(
-        { error: 'Email et mot de passe sont requis' },
+        { error: "Email et mot de passe sont requis" },
         { status: 400 }
       );
     }
 
-    // Recherche de l'utilisateur
-    const user = adminUsers.find(u => u.email === email);
+    // Recherche de l'utilisateur dans la base de données
+    const user = await db.user.findUnique({
+      where: { email },
+    });
+
     if (!user) {
       return NextResponse.json(
-        { error: 'Identifiants incorrects' },
+        { error: "Identifiants incorrects" },
         { status: 401 }
       );
     }
@@ -51,38 +36,41 @@ export async function POST(request: NextRequest) {
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return NextResponse.json(
-        { error: 'Identifiants incorrects' },
+        { error: "Identifiants incorrects" },
         { status: 401 }
       );
     }
 
     // Création d'un token JWT simple (dans un environnement réel, on utiliserait une vraie librairie JWT)
-    const token = Buffer.from(JSON.stringify({
-      userId: user.id,
-      email: user.email,
-      role: user.role,
-      timestamp: Date.now()
-    })).toString('base64');
+    const token = Buffer.from(
+      JSON.stringify({
+        userId: user.id,
+        email: user.email,
+        role: user.role,
+        timestamp: Date.now(),
+      })
+    ).toString("base64");
 
     // Journalisation de la connexion (pour la sécurité)
-    console.log(`Connexion admin réussie: ${email} - ${new Date().toISOString()}`);
+    console.log(
+      `Connexion admin réussie: ${email} - ${new Date().toISOString()}`
+    );
 
     return NextResponse.json({
-      message: 'Connexion réussie',
+      message: "Connexion réussie",
       token,
       user: {
         id: user.id,
         email: user.email,
         name: user.name,
-        role: user.role
-      }
+        role: user.role,
+      },
     });
-
   } catch (error) {
-    console.error('Erreur lors de la connexion admin:', error);
-    
+    console.error("Erreur lors de la connexion admin:", error);
+
     return NextResponse.json(
-      { error: 'Erreur interne du serveur' },
+      { error: "Erreur interne du serveur" },
       { status: 500 }
     );
   }
@@ -90,7 +78,7 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   return NextResponse.json(
-    { message: 'Méthode non autorisée' },
+    { message: "Méthode non autorisée" },
     { status: 405 }
   );
 }

@@ -4,7 +4,7 @@ import { db } from '@/lib/db';
 // Middleware d'authentification simplifié
 function authenticate(request: NextRequest): boolean {
   const authHeader = request.headers.get('authorization');
-  return authHeader && authHeader.startsWith('Bearer ');
+  return !!(authHeader && authHeader.startsWith('Bearer '));
 }
 
 // GET /api/admin/evenements - Récupérer tous les événements

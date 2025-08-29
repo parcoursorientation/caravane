@@ -5,7 +5,7 @@ import { db } from '@/lib/db';
 function authenticate(request: NextRequest): boolean {
   // Dans un environnement réel, on vérifierait le token JWT
   const authHeader = request.headers.get('authorization');
-  return authHeader && authHeader.startsWith('Bearer ');
+  return !!(authHeader && authHeader.startsWith('Bearer '));
 }
 
 // Interface pour le contexte des paramètres

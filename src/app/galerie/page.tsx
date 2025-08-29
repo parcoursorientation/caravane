@@ -2,11 +2,40 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Filter, CalendarDays, MapPin, Users, Eye, Image as ImageIcon, Video, File } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { VisuallyHidden } from "@/components/ui/visually-hidden";
+import {
+  Filter,
+  CalendarDays,
+  MapPin,
+  Users,
+  Eye,
+  Image as ImageIcon,
+  Video,
+  File,
+} from "lucide-react";
 import Image from "next/image";
 import Layout from "@/components/layout/Layout";
 
@@ -30,18 +59,20 @@ export default function GaleriePage() {
   const [anneeFilter, setAnneeFilter] = useState<string>("TOUS");
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
-  const [viewMode, setViewMode] = useState<'grid' | 'events'>('grid'); // Nouveau mode d'affichage
+  const [viewMode, setViewMode] = useState<"grid" | "events">("grid"); // Nouveau mode d'affichage
 
   const handleImageError = (photoId: string) => {
-    console.error(`❌ Erreur de chargement de l'image pour la photo ${photoId}`);
-    setImageErrors(prev => new Set(prev).add(photoId));
+    console.error(
+      `❌ Erreur de chargement de l'image pour la photo ${photoId}`
+    );
+    setImageErrors((prev) => new Set(prev).add(photoId));
   };
 
   const getMediaIcon = (type: string) => {
     switch (type) {
-      case 'PHOTO':
+      case "PHOTO":
         return <ImageIcon className="h-8 w-8" />;
-      case 'VIDEO':
+      case "VIDEO":
         return <Video className="h-8 w-8" />;
       default:
         return <File className="h-8 w-8" />;
@@ -50,75 +81,126 @@ export default function GaleriePage() {
 
   const renderMediaPreview = (photo: Photo, isDialog = false) => {
     const hasError = imageErrors.has(photo.id);
-    const imageUrl = photo.fichier.startsWith('/') ? photo.fichier : `/uploads/${photo.fichier}`;
-    
-    console.log(`🖼️ Tentative d'affichage de l'image: ${imageUrl} pour la photo ${photo.titre}`);
-    
-    if (hasError) {
+    const imageUrl = photo.fichier.startsWith("/")
+      ? photo.fichier
+      : `/uploads/${photo.fichier}`;
+
+    // Déterminer le type de fichier basé sur l'extension
+    const getFileType = (filename: string) => {
+      const ext = filename.toLowerCase().split(".").pop();
+      if (
+        ["jpg", "jpeg", "png", "gif", "webp", "avif", "svg"].includes(ext || "")
+      ) {
+        return "image";
+      } else if (["mp4", "webm", "ogg", "avi", "mov"].includes(ext || "")) {
+        return "video";
+      } else if (["pdf"].includes(ext || "")) {
+        return "pdf";
+      }
+      return "document";
+    };
+
+    const fileType = getFileType(photo.fichier);
+
+    // Pour les PDFs, on affiche une prévisualisation ou on ouvre dans un nouvel onglet
+    if (fileType === "pdf") {
       return (
-        <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-          <div className="text-gray-400 text-center">
-            {getMediaIcon(photo.type)}
-            <p className="text-sm mt-2">Image non disponible</p>
+        <div
+          className="w-full h-full bg-gradient-to-br from-red-50 to-red-100 flex items-center justify-center cursor-pointer hover:from-red-100 hover:to-red-200 transition-colors"
+          onClick={() => window.open(imageUrl, "_blank")}
+        >
+          <div className="text-red-600 text-center p-4">
+            <File className="h-12 w-12 mx-auto mb-2" />
+            <p className="text-sm font-medium">Document PDF</p>
+            <p className="text-xs mt-1 text-red-500">Cliquez pour ouvrir</p>
           </div>
         </div>
       );
     }
 
-    if (photo.type === 'PHOTO') {
+    // Pour les documents non supportés ou erreurs
+    if (hasError || fileType === "document") {
       return (
-        <img
-          src={imageUrl}
-          alt={photo.titre}
-          className="w-full h-full object-cover"
-          onError={() => handleImageError(photo.id)}
-        />
-      );
-    } else if (photo.type === 'VIDEO') {
-      return (
-        <div className="w-full h-full bg-gray-200 flex items-center justify-center relative">
-          <video
-            className="w-full h-full object-cover"
-            controls
-            onError={() => handleImageError(photo.id)}
-          >
-            <source src={imageUrl} type="video/mp4" />
-            Votre navigateur ne supporte pas la lecture de vidéos.
-          </video>
-        </div>
-      );
-    } else {
-      return (
-        <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-          <div className="text-gray-400 text-center">
+        <div className="w-full h-full bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+          <div className="text-gray-500 text-center p-4">
             {getMediaIcon(photo.type)}
-            <p className="text-sm mt-2">Document</p>
+            <p className="text-sm mt-2 font-medium">
+              {fileType === "document" ? "Document" : "Média non disponible"}
+            </p>
           </div>
         </div>
       );
     }
+
+    const imgClass = isDialog
+      ? "w-full h-full object-contain bg-white"
+      : "w-full h-full object-cover";
+
+    // Affichage des images
+    if (fileType === "image") {
+      return (
+        <img
+          src={imageUrl}
+          alt={photo.titre}
+          className={imgClass}
+          onError={() => handleImageError(photo.id)}
+        />
+      );
+    }
+
+    // Affichage des vidéos
+    if (fileType === "video") {
+      return (
+        <div className="w-full h-full relative overflow-hidden">
+          <video
+            className={imgClass}
+            controls={true}
+            preload="metadata"
+            onError={() => handleImageError(photo.id)}
+          >
+            <source src={imageUrl} type="video/mp4" />
+            <source src={imageUrl} type="video/webm" />
+            <source src={imageUrl} type="video/ogg" />
+            Votre navigateur ne supporte pas la lecture de vidéos.
+          </video>
+        </div>
+      );
+    }
+
+    // Fallback pour types non supportés
+    return (
+      <div className="w-full h-full bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center">
+        <div className="text-blue-500 text-center p-4">
+          {getMediaIcon(photo.type)}
+          <p className="text-sm mt-2 font-medium">Type de média non supporté</p>
+        </div>
+      </div>
+    );
   };
 
   // Récupérer les données depuis l'API
   useEffect(() => {
     const fetchMedias = async () => {
       try {
-        console.log('🔄 Récupération des médias depuis l\'API...');
-        const response = await fetch('/api/medias');
-        
+        console.log("🔄 Récupération des médias depuis l'API...");
+        const response = await fetch("/api/medias");
+
         if (response.ok) {
           const data = await response.json();
           console.log(`✅ ${data.data.length} médias récupérés depuis l'API`);
           setPhotos(data.data);
           setFilteredPhotos(data.data);
         } else {
-          console.error('❌ Erreur lors de la récupération des médias:', response.status);
+          console.error(
+            "❌ Erreur lors de la récupération des médias:",
+            response.status
+          );
           // En cas d'erreur, on utilise un tableau vide
           setPhotos([]);
           setFilteredPhotos([]);
         }
       } catch (error) {
-        console.error('❌ Erreur de connexion au serveur:', error);
+        console.error("❌ Erreur de connexion au serveur:", error);
         // En cas d'erreur, on utilise un tableau vide
         setPhotos([]);
         setFilteredPhotos([]);
@@ -135,12 +217,14 @@ export default function GaleriePage() {
 
     // Filtrer par catégorie
     if (categorieFilter !== "TOUS") {
-      filtered = filtered.filter(photo => photo.categorie === categorieFilter);
+      filtered = filtered.filter(
+        (photo) => photo.categorie === categorieFilter
+      );
     }
 
     // Filtrer par année
     if (anneeFilter !== "TOUS") {
-      filtered = filtered.filter(photo => photo.date.startsWith(anneeFilter));
+      filtered = filtered.filter((photo) => photo.date.startsWith(anneeFilter));
     }
 
     setFilteredPhotos(filtered);
@@ -148,21 +232,21 @@ export default function GaleriePage() {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('fr-FR', { 
-      weekday: 'long', 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
+    return date.toLocaleDateString("fr-FR", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   };
 
   const getUniqueCategories = () => {
-    const categories = photos.map(photo => photo.categorie);
+    const categories = photos.map((photo) => photo.categorie);
     return [...new Set(categories)];
   };
 
   const getUniqueAnnees = () => {
-    const annees = photos.map(photo => photo.date.substring(0, 4));
+    const annees = photos.map((photo) => photo.date.substring(0, 4));
     return [...new Set(annees)].sort((a, b) => b.localeCompare(a));
   };
 
@@ -178,8 +262,8 @@ export default function GaleriePage() {
 
     return Object.entries(grouped).sort(([a], [b]) => {
       // Trier par date (extraire la date du nom de l'événement)
-      const dateA = a.split(' - ')[0];
-      const dateB = b.split(' - ')[0];
+      const dateA = a.split(" - ")[0];
+      const dateB = b.split(" - ")[0];
       return new Date(dateB).getTime() - new Date(dateA).getTime();
     });
   };
@@ -202,9 +286,12 @@ export default function GaleriePage() {
       {/* Header */}
       <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">Galerie Photos</h1>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">
+            Galerie Photos
+          </h1>
           <p className="text-xl text-blue-100 max-w-3xl mx-auto">
-            Revivez les moments forts des Forums et journées portes ouvertes précédentes
+            Revivez les moments forts des Forums et journées portes ouvertes
+            précédentes
           </p>
         </div>
       </div>
@@ -216,19 +303,24 @@ export default function GaleriePage() {
             <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
               <div className="flex items-center gap-2">
                 <Filter className="h-4 w-4 text-gray-500" />
-                <Select value={categorieFilter} onValueChange={setCategorieFilter}>
+                <Select
+                  value={categorieFilter}
+                  onValueChange={setCategorieFilter}
+                >
                   <SelectTrigger className="w-48">
                     <SelectValue placeholder="Catégorie" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="TOUS">Toutes les catégories</SelectItem>
                     {getUniqueCategories().map((categorie) => (
-                      <SelectItem key={categorie} value={categorie}>{categorie}</SelectItem>
+                      <SelectItem key={categorie} value={categorie}>
+                        {categorie}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-              
+
               <div className="flex items-center gap-2">
                 <CalendarDays className="h-4 w-4 text-gray-500" />
                 <Select value={anneeFilter} onValueChange={setAnneeFilter}>
@@ -238,95 +330,70 @@ export default function GaleriePage() {
                   <SelectContent>
                     <SelectItem value="TOUS">Toutes les années</SelectItem>
                     {getUniqueAnnees().map((annee) => (
-                      <SelectItem key={annee} value={annee}>{annee}</SelectItem>
+                      <SelectItem key={annee} value={annee}>
+                        {annee}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
             </div>
-            
+
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
                 <span className="text-sm text-gray-600">Mode d'affichage:</span>
                 <div className="flex bg-gray-100 rounded-lg p-1">
                   <Button
-                    variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                    variant={viewMode === "grid" ? "default" : "ghost"}
                     size="sm"
-                    onClick={() => setViewMode('grid')}
+                    onClick={() => setViewMode("grid")}
                     className="h-8 px-3"
                   >
                     Grille
                   </Button>
                   <Button
-                    variant={viewMode === 'events' ? 'default' : 'ghost'}
+                    variant={viewMode === "events" ? "default" : "ghost"}
                     size="sm"
-                    onClick={() => setViewMode('events')}
+                    onClick={() => setViewMode("events")}
                     className="h-8 px-3"
                   >
                     Par événement
                   </Button>
                 </div>
               </div>
-              
+
               <div className="text-sm text-gray-600">
-                {filteredPhotos.length} photo{filteredPhotos.length > 1 ? 's' : ''} trouvée{filteredPhotos.length > 1 ? 's' : ''}
+                {filteredPhotos.length} photo
+                {filteredPhotos.length > 1 ? "s" : ""} trouvée
+                {filteredPhotos.length > 1 ? "s" : ""}
               </div>
             </div>
           </div>
         </div>
 
-          {/* Galerie */}
+        {/* Galerie */}
         {filteredPhotos.length === 0 ? (
           <Card>
             <CardContent className="text-center py-12">
               <Eye className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Aucune photo trouvée</h3>
-              <p className="text-gray-500">Essayez de modifier vos critères de filtrage</p>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                Aucune photo trouvée
+              </h3>
+              <p className="text-gray-500">
+                Essayez de modifier vos critères de filtrage
+              </p>
             </CardContent>
           </Card>
-        ) : viewMode === 'grid' ? (
+        ) : viewMode === "grid" ? (
           /* Mode grille - Version simplifiée pour tester */
           <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredPhotos.map((photo) => (
-              <Card key={photo.id} className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group">
-                <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
-                  <img
-                    src={photo.fichier}
-                    alt={photo.titre}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      console.error(`Erreur de chargement de l'image: ${photo.fichier}`);
-                      e.currentTarget.style.display = 'none';
-                      e.currentTarget.parentElement!.innerHTML = `
-                        <div class="w-full h-full bg-gray-200 flex items-center justify-center">
-                          <div class="text-gray-400 text-center">
-                            <svg class="h-12 w-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                            </svg>
-                            <p class="text-sm">Image non disponible</p>
-                          </div>
-                        </div>
-                      `;
-                    }}
-                  />
-                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center overflow-hidden">
-                    <img
-                      src={photo.fichier}
-                      alt={photo.titre}
-                      className="w-full h-full object-cover transform scale-100 group-hover:scale-110 transition-transform duration-300"
-                      onError={(e) => {
-                        console.error(`Erreur de chargement de l'image au survol: ${photo.fichier}`);
-                        e.currentTarget.style.display = 'none';
-                        e.currentTarget.parentElement!.innerHTML = `
-                          <div class="w-full h-full bg-gray-200 flex items-center justify-center">
-                            <svg class="h-8 w-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                            </svg>
-                          </div>
-                        `;
-                      }}
-                    />
-                  </div>
+              <Card
+                key={photo.id}
+                className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group"
+              >
+                <div className="relative aspect-[4/3] overflow-hidden bg-white">
+                  {renderMediaPreview(photo)}
                   <div className="absolute top-2 right-2">
                     <Badge variant="secondary" className="text-xs">
                       {photo.categorie}
@@ -334,8 +401,12 @@ export default function GaleriePage() {
                   </div>
                 </div>
                 <CardContent className="p-4">
-                  <h3 className="font-medium text-sm mb-1 line-clamp-1">{photo.titre}</h3>
-                  <p className="text-xs text-gray-500 mb-2 line-clamp-2">{photo.description}</p>
+                  <h3 className="font-medium text-sm mb-1 line-clamp-1">
+                    {photo.titre}
+                  </h3>
+                  <p className="text-xs text-gray-500 mb-2 line-clamp-2">
+                    {photo.description}
+                  </p>
                   <div className="flex items-center gap-1 text-xs text-gray-400">
                     <CalendarDays className="h-3 w-3" />
                     <span>{formatDate(photo.date)}</span>
@@ -344,38 +415,40 @@ export default function GaleriePage() {
                     <MapPin className="h-3 w-3" />
                     <span>{photo.lieu}</span>
                   </div>
-                  
+
                   <Dialog>
                     <DialogTrigger asChild>
-                      <Button 
-                        className="w-full mt-3" 
-                        size="sm" 
-                        onClick={() => setSelectedPhoto(photo)}
+                      <Button
+                        className="w-full mt-3"
+                        size="sm"
+                        onClick={() => {
+                          const fileType = photo.fichier
+                            .toLowerCase()
+                            .split(".")
+                            .pop();
+                          if (fileType === "pdf") {
+                            // Pour les PDF, ouvrir dans un nouvel onglet
+                            const url = photo.fichier.startsWith("/")
+                              ? photo.fichier
+                              : `/uploads/${photo.fichier}`;
+                            window.open(url, "_blank");
+                            return;
+                          }
+                          setSelectedPhoto(photo);
+                        }}
                       >
                         <Eye className="h-3 w-3 mr-1" />
-                        Voir
+                        {photo.fichier.toLowerCase().endsWith(".pdf")
+                          ? "Ouvrir PDF"
+                          : "Voir"}
                       </Button>
                     </DialogTrigger>
                     <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden p-0">
+                      <VisuallyHidden>
+                        <DialogTitle>{photo.titre}</DialogTitle>
+                      </VisuallyHidden>
                       <div className="relative w-full h-full">
-                        <img
-                          src={photo.fichier}
-                          alt={photo.titre}
-                          className="w-full h-full object-contain"
-                          onError={(e) => {
-                            e.currentTarget.style.display = 'none';
-                            e.currentTarget.parentElement!.innerHTML = `
-                              <div class="w-full h-full bg-gray-200 flex items-center justify-center">
-                                <div class="text-gray-400 text-center">
-                                  <svg class="h-16 w-16 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                  </svg>
-                                  <p>Image non disponible</p>
-                                </div>
-                              </div>
-                            `;
-                          }}
-                        />
+                        {renderMediaPreview(photo, true)}
                       </div>
                     </DialogContent>
                   </Dialog>
@@ -395,52 +468,20 @@ export default function GaleriePage() {
                       {eventName}
                     </CardTitle>
                     <CardDescription>
-                      {eventPhotos.length} photo{eventPhotos.length > 1 ? 's' : ''} dans cet événement
+                      {eventPhotos.length} photo
+                      {eventPhotos.length > 1 ? "s" : ""} dans cet événement
                     </CardDescription>
                   </CardHeader>
                 </Card>
-                
+
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                   {eventPhotos.map((photo) => (
-                    <Card key={photo.id} className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group">
-                      <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
-                        <img
-                          src={photo.fichier}
-                          alt={photo.titre}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            console.error(`Erreur de chargement de l'image: ${photo.fichier}`);
-                            e.currentTarget.style.display = 'none';
-                            e.currentTarget.parentElement!.innerHTML = `
-                              <div class="w-full h-full bg-gray-200 flex items-center justify-center">
-                                <div class="text-gray-400 text-center">
-                                  <svg class="h-12 w-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                  </svg>
-                                  <p class="text-sm">Image non disponible</p>
-                                </div>
-                              </div>
-                            `;
-                          }}
-                        />
-                        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center overflow-hidden">
-                          <img
-                            src={photo.fichier}
-                            alt={photo.titre}
-                            className="w-full h-full object-cover transform scale-100 group-hover:scale-110 transition-transform duration-300"
-                            onError={(e) => {
-                              console.error(`Erreur de chargement de l'image au survol: ${photo.fichier}`);
-                              e.currentTarget.style.display = 'none';
-                              e.currentTarget.parentElement!.innerHTML = `
-                                <div class="w-full h-full bg-gray-200 flex items-center justify-center">
-                                  <svg class="h-8 w-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                  </svg>
-                                </div>
-                              `;
-                            }}
-                          />
-                        </div>
+                    <Card
+                      key={photo.id}
+                      className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group"
+                    >
+                      <div className="relative aspect-[4/3] overflow-hidden bg-white">
+                        {renderMediaPreview(photo)}
                         <div className="absolute top-2 right-2">
                           <Badge variant="secondary" className="text-xs">
                             {photo.categorie}
@@ -448,40 +489,46 @@ export default function GaleriePage() {
                         </div>
                       </div>
                       <CardContent className="p-3">
-                        <h3 className="font-medium text-sm mb-1 line-clamp-1">{photo.titre}</h3>
-                        <p className="text-xs text-gray-500 mb-2 line-clamp-1">{photo.description}</p>
-                        
+                        <h3 className="font-medium text-sm mb-1 line-clamp-1">
+                          {photo.titre}
+                        </h3>
+                        <p className="text-xs text-gray-500 mb-2 line-clamp-1">
+                          {photo.description}
+                        </p>
+
                         <Dialog>
                           <DialogTrigger asChild>
-                            <Button 
-                              className="w-full" 
-                              size="sm" 
-                              onClick={() => setSelectedPhoto(photo)}
+                            <Button
+                              className="w-full"
+                              size="sm"
+                              onClick={() => {
+                                const fileType = photo.fichier
+                                  .toLowerCase()
+                                  .split(".")
+                                  .pop();
+                                if (fileType === "pdf") {
+                                  // Pour les PDF, ouvrir dans un nouvel onglet
+                                  const url = photo.fichier.startsWith("/")
+                                    ? photo.fichier
+                                    : `/uploads/${photo.fichier}`;
+                                  window.open(url, "_blank");
+                                  return;
+                                }
+                                setSelectedPhoto(photo);
+                              }}
                             >
                               <Eye className="h-3 w-3 mr-1" />
-                              Voir
+                              {photo.fichier.toLowerCase().endsWith(".pdf")
+                                ? "Ouvrir PDF"
+                                : "Voir"}
                             </Button>
                           </DialogTrigger>
                           <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden p-0">
+                            <VisuallyHidden>
+                              <DialogTitle>{photo.titre}</DialogTitle>
+                            </VisuallyHidden>
                             <div className="relative w-full h-full">
-                              <img
-                                src={photo.fichier}
-                                alt={photo.titre}
-                                className="w-full h-full object-contain"
-                                onError={(e) => {
-                                  e.currentTarget.style.display = 'none';
-                                  e.currentTarget.parentElement!.innerHTML = `
-                                    <div class="w-full h-full bg-gray-200 flex items-center justify-center">
-                                      <div class="text-gray-400 text-center">
-                                        <svg class="h-16 w-16 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                        </svg>
-                                        <p>Image non disponible</p>
-                                      </div>
-                                    </div>
-                                  `;
-                                }}
-                              />
+                              {renderMediaPreview(photo, true)}
                             </div>
                           </DialogContent>
                         </Dialog>
