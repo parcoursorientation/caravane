@@ -3,7 +3,13 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -17,7 +23,7 @@ interface LoginFormData {
 export default function AdminLoginPage() {
   const [formData, setFormData] = useState<LoginFormData>({
     email: "",
-    password: ""
+    password: "",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -46,7 +52,7 @@ export default function AdminLoginPage() {
         // Stocker le token dans localStorage (dans un environnement réel, on utiliserait des cookies httpOnly)
         localStorage.setItem("adminToken", data.token);
         localStorage.setItem("adminUser", JSON.stringify(data.user));
-        
+
         // Rediriger vers le tableau de bord après un court délai
         setTimeout(() => {
           router.push("/admin");
@@ -62,7 +68,7 @@ export default function AdminLoginPage() {
   };
 
   const handleInputChange = (field: keyof LoginFormData, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
     setError("");
   };
 
@@ -127,7 +133,9 @@ export default function AdminLoginPage() {
                     id="password"
                     type={showPassword ? "text" : "password"}
                     value={formData.password}
-                    onChange={(e) => handleInputChange("password", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("password", e.target.value)
+                    }
                     placeholder="••••••••"
                     required
                     disabled={isLoading || success}
@@ -149,9 +157,9 @@ export default function AdminLoginPage() {
                 </div>
               </div>
 
-              <Button 
-                type="submit" 
-                className="w-full" 
+              <Button
+                type="submit"
+                className="w-full"
                 disabled={isLoading || success}
               >
                 {isLoading ? (
@@ -164,7 +172,7 @@ export default function AdminLoginPage() {
                 )}
               </Button>
             </form>
-
+            {/*  
             <div className="mt-6 pt-4 border-t">
               <div className="text-center text-sm text-gray-600">
                 <p className="mb-2">Compte de démonstration :</p>
@@ -173,7 +181,7 @@ export default function AdminLoginPage() {
                   <div>Mot de passe: admin123</div>
                 </div>
               </div>
-            </div>
+            </div>*/}
           </CardContent>
         </Card>
 
