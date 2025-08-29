@@ -7,13 +7,6 @@ function logAdminAction(action: string, details: any, request: NextRequest) {
   const timestamp = new Date().toISOString();
   const authHeader = request.headers.get("authorization");
   const token = authHeader ? authHeader.substring(7) : "unknown";
-  try {
-    const json = Buffer.from(token, "base64").toString("utf-8");
-    const payload = JSON.parse(json);
-    return payload?.role === "SUPER_ADMIN";
-  } catch {
-    return false;
-  }
 
   const logEntry = {
     timestamp,
@@ -54,6 +47,14 @@ export async function GET(request: NextRequest) {
   try {
     if (!authenticate(request)) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+    }
+
+    // Seul SUPER_ADMIN peut lister les utilisateurs (gestion utilisateurs)
+    if (!isSuperAdmin(request)) {
+      return NextResponse.json(
+        { error: "Droits insuffisants" },
+        { status: 403 }
+      );
     }
 
     // Récupérer les utilisateurs depuis la base de données
