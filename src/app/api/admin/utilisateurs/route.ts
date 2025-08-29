@@ -7,6 +7,13 @@ function logAdminAction(action: string, details: any, request: NextRequest) {
   const timestamp = new Date().toISOString();
   const authHeader = request.headers.get("authorization");
   const token = authHeader ? authHeader.substring(7) : "unknown";
+  try {
+    const json = Buffer.from(token, "base64").toString("utf-8");
+    const payload = JSON.parse(json);
+    return payload?.role === "SUPER_ADMIN";
+  } catch {
+    return false;
+  }
 
   const logEntry = {
     timestamp,
@@ -29,8 +36,17 @@ function authenticate(request: NextRequest): boolean {
 
 // Vérifier les droits de super admin
 function isSuperAdmin(request: NextRequest): boolean {
-  // Dans un environnement réel, on vérifierait le rôle dans le token
-  return true; // Simplifié pour la démo
+  // Extraire et décoder le token (base64 d'un JSON) pour vérifier le rôle
+  const authHeader = request.headers.get("authorization");
+  if (!authHeader || !authHeader.startsWith("Bearer ")) return false;
+  const token = authHeader.substring(7);
+  try {
+    const json = Buffer.from(token, "base64").toString("utf-8");
+    const payload = JSON.parse(json);
+    return payload?.role === "SUPER_ADMIN";
+  } catch {
+    return false;
+  }
 }
 
 // GET /api/admin/utilisateurs - Récupérer tous les utilisateurs
