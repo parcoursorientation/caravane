@@ -154,18 +154,18 @@ export default function CompteARebours({
       <CardContent>
         <div className="text-center mb-4">
           <div className="flex items-center justify-center gap-2 text-base text-blue-100 mb-2">
-            <Calendar className="h-4 w-4" />
+            <Calendar className="h-8 w-8" />
             <span>Événement le {formatDate(compteARebours.dateCible)}</span>
           </div>
           {compteARebours.dateFin && (
             <div className="flex items-center justify-center gap-2 text-base text-blue-100 mb-2">
-              <Calendar className="h-4 w-4" />
+              <Calendar className="h-8 w-8" />
               <span>Jusqu'au {formatDate(compteARebours.dateFin)}</span>
             </div>
           )}
           {(compteARebours.lieu || compteARebours.ville) && (
             <div className="flex items-center justify-center gap-2 text-base text-blue-100 mb-2">
-              <MapPin className="h-4 w-4" />
+              <MapPin className="h-8 w-8" />
               <span>
                 {compteARebours.lieu}
                 {compteARebours.lieu && compteARebours.ville && ", "}
@@ -207,7 +207,7 @@ export default function CompteARebours({
 
         {isExpired() && (
           <div className="text-center py-4">
-            <Clock className="h-12 w-12 mx-auto mb-2 text-blue-200" />
+            <Clock className="h-16 w-16 mx-auto mb-2 text-blue-200" />
             <p className="text-blue-100">
               Cet événement est maintenant terminé.
             </p>
