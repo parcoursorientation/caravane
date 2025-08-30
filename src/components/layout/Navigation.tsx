@@ -4,7 +4,14 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
 import { Menu, X } from "lucide-react";
 
 interface NavigationProps {
@@ -43,7 +50,7 @@ const adminNavigationItems = [
 export default function Navigation({ isAdmin = false }: NavigationProps) {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
-  
+
   const items = isAdmin ? adminNavigationItems : navigationItems;
 
   const isActive = (href: string) => {
@@ -71,8 +78,12 @@ export default function Navigation({ isAdmin = false }: NavigationProps) {
             </Link>
             {isAdmin && (
               <>
-                <span className="ml-2 md:ml-4 text-gray-400 text-sm md:text-base">|</span>
-                <span className="ml-2 md:ml-4 text-gray-600 text-sm md:text-base">Administration</span>
+                <span className="ml-2 md:ml-4 text-gray-400 text-sm md:text-base">
+                  |
+                </span>
+                <span className="ml-2 md:ml-4 text-gray-600 text-sm md:text-base">
+                  Administration
+                </span>
               </>
             )}
           </div>
@@ -105,13 +116,17 @@ export default function Navigation({ isAdmin = false }: NavigationProps) {
                 </Button>
               </SheetTrigger>
               <SheetContent side="right" className="w-[280px] sm:w-[320px]">
-                <div className="flex flex-col space-y-3 mt-6">
-                  <div className="pb-4 border-b">
-                    <h2 className="text-lg font-semibold text-blue-600">ATLANTIS EVENTS</h2>
-                    {isAdmin && (
-                      <p className="text-sm text-gray-600 mt-1">Administration</p>
-                    )}
-                  </div>
+                <SheetHeader className="mt-6 px-3">
+                  <SheetTitle className="text-lg font-semibold text-blue-600">
+                    ATLANTIS EVENTS
+                  </SheetTitle>
+                  {isAdmin && (
+                    <SheetDescription className="text-sm text-gray-600 mt-1">
+                      Administration
+                    </SheetDescription>
+                  )}
+                </SheetHeader>
+                <div className="flex flex-col space-y-3 mt-4">
                   {items.map((item) => (
                     <Link
                       key={item.href}
