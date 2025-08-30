@@ -467,6 +467,9 @@ export default function ProgrammePage() {
                                           month: "2-digit",
                                         })}
                                       </Badge>
+                                      <Badge variant="outline" className="ml-2 text-purple-800 border-purple-300">
+                                        {Math.round((new Date(evenement.dateFin).setHours(0,0,0,0) - new Date(evenement.dateDebut).setHours(0,0,0,0)) / (1000*60*60*24)) + 1} jours
+                                      </Badge>
                                     )}
                                   {evenement.exposantsCount > 0 && (
                                     <Badge
