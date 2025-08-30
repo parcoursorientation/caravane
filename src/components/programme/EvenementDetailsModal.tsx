@@ -168,7 +168,35 @@ export default function EvenementDetailsModal({
                   <div>
                     <p className="font-medium">Date</p>
                     <p className="text-gray-600">
-                      {formatDate(evenement.date)}
+                      {evenement.dateDebut &&
+                      evenement.dateFin &&
+                      evenement.dateDebut !== evenement.dateFin ? (
+                        <>
+                          {formatDate(evenement.dateDebut)}
+                          <span className="mx-1">→</span>
+                          {formatDate(evenement.dateFin)}
+                          <Badge variant="outline" className="ml-2">
+                            {Math.round(
+                              (new Date(evenement.dateFin).setHours(
+                                0,
+                                0,
+                                0,
+                                0
+                              ) -
+                                new Date(evenement.dateDebut).setHours(
+                                  0,
+                                  0,
+                                  0,
+                                  0
+                                )) /
+                                (1000 * 60 * 60 * 24)
+                            ) + 1}{" "}
+                            jours
+                          </Badge>
+                        </>
+                      ) : (
+                        formatDate(evenement.date)
+                      )}
                     </p>
                   </div>
                 </div>
