@@ -359,14 +359,6 @@ export default function ProgrammePage() {
                   ))}
                 </select>
               </div>
-
-              <Button
-                onClick={handleTelechargerProgramme}
-                className="flex items-center gap-2 bg-black text-white hover:bg-gray-800 cursor-pointer"
-              >
-                <Download className="h-4 w-4" />
-                Télécharger le programme
-              </Button>
             </div>
 
             {/* Statistiques */}
