@@ -3,29 +3,58 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { 
-  Users, 
-  Plus, 
-  Edit, 
-  Trash2, 
-  Eye, 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Users,
+  Plus,
+  Edit,
+  Trash2,
+  Eye,
   ArrowLeft,
   Save,
   X,
   Search,
   ExternalLink,
-  Globe
+  Globe,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { ConfirmDialog, useConfirmDialog } from "@/components/ui/confirm-dialog";
+import {
+  ConfirmDialog,
+  useConfirmDialog,
+} from "@/components/ui/confirm-dialog";
 
 interface Exposant {
   id: string;
@@ -62,7 +91,7 @@ export default function AdminExposantsPage() {
     domaine: "",
     logo: "",
     siteWeb: "",
-    statutConfirmation: ""
+    statutConfirmation: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
@@ -72,7 +101,7 @@ export default function AdminExposantsPage() {
     // Vérifier l'authentification
     const token = localStorage.getItem("adminToken");
     console.log("Initial token check:", token ? "Found" : "Not found");
-    
+
     if (!token) {
       console.log("No token found, but continuing with test token");
       // Don't redirect for now, let's test with a fallback token
@@ -85,11 +114,11 @@ export default function AdminExposantsPage() {
     try {
       const token = localStorage.getItem("adminToken");
       console.log("Token from localStorage:", token ? "Found" : "Not found");
-      
+
       const response = await fetch("/api/admin/exposants", {
         headers: {
-          "Authorization": `Bearer ${token || "test-token"}`
-        }
+          Authorization: `Bearer ${token || "test-token"}`,
+        },
       });
 
       console.log("API Response status:", response.status);
@@ -126,19 +155,19 @@ export default function AdminExposantsPage() {
 
     try {
       const token = localStorage.getItem("adminToken");
-      const url = editingExposant 
+      const url = editingExposant
         ? `/api/admin/exposants/${editingExposant.id}`
         : "/api/admin/exposants";
-      
+
       const method = editingExposant ? "PUT" : "POST";
-      
+
       const response = await fetch(url, {
         method,
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formData),
       });
 
       const data = await response.json();
@@ -146,7 +175,9 @@ export default function AdminExposantsPage() {
       if (response.ok) {
         toast({
           title: "Succès",
-          description: editingExposant ? "Exposant mis à jour avec succès" : "Exposant créé avec succès",
+          description: editingExposant
+            ? "Exposant mis à jour avec succès"
+            : "Exposant créé avec succès",
           variant: "default",
         });
         fetchExposants();
@@ -178,7 +209,7 @@ export default function AdminExposantsPage() {
       domaine: exposant.domaine,
       logo: exposant.logo || "",
       siteWeb: exposant.siteWeb || "",
-      statutConfirmation: exposant.statutConfirmation
+      statutConfirmation: exposant.statutConfirmation,
     });
     setIsDialogOpen(true);
   };
@@ -186,7 +217,8 @@ export default function AdminExposantsPage() {
   const handleDelete = async (id: string) => {
     const shouldDelete = await confirm({
       title: "Supprimer l'exposant",
-      description: "Êtes-vous sûr de vouloir supprimer cet exposant ? Cette action est irréversible.",
+      description:
+        "Êtes-vous sûr de vouloir supprimer cet exposant ? Cette action est irréversible.",
       confirmText: "Supprimer",
       cancelText: "Annuler",
       variant: "destructive",
@@ -196,8 +228,8 @@ export default function AdminExposantsPage() {
           const response = await fetch(`/api/admin/exposants/${id}`, {
             method: "DELETE",
             headers: {
-              "Authorization": `Bearer ${token}`
-            }
+              Authorization: `Bearer ${token}`,
+            },
           });
 
           if (response.ok) {
@@ -222,7 +254,7 @@ export default function AdminExposantsPage() {
             variant: "destructive",
           });
         }
-      }
+      },
     });
   };
 
@@ -234,22 +266,24 @@ export default function AdminExposantsPage() {
       domaine: "",
       logo: "",
       siteWeb: "",
-      statutConfirmation: ""
+      statutConfirmation: "",
     });
   };
 
   const getUniqueDomaines = () => {
-    const domaines = exposants.map(exposant => exposant.domaine);
+    const domaines = exposants.map((exposant) => exposant.domaine);
     return [...new Set(domaines)];
   };
 
-  const filteredExposants = exposants.filter(exposant => {
-    const matchesSearch = exposant.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         exposant.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         exposant.domaine.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesDomaine = domaineFilter === "TOUS" || exposant.domaine === domaineFilter;
-    
+  const filteredExposants = exposants.filter((exposant) => {
+    const matchesSearch =
+      exposant.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      exposant.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      exposant.domaine.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesDomaine =
+      domaineFilter === "TOUS" || exposant.domaine === domaineFilter;
+
     return matchesSearch && matchesDomaine;
   });
 
@@ -271,11 +305,17 @@ export default function AdminExposantsPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-4">
-              <Button variant="outline" size="sm" onClick={() => router.push("/admin")}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => router.push("/admin")}
+              >
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Retour
               </Button>
-              <h1 className="text-xl font-semibold text-gray-900">Gestion des Exposants</h1>
+              <h1 className="text-xl font-semibold text-gray-900">
+                Gestion des Exposants
+              </h1>
             </div>
             <Button onClick={() => setIsDialogOpen(true)}>
               <Plus className="h-4 w-4 mr-2" />
@@ -306,7 +346,9 @@ export default function AdminExposantsPage() {
                 <SelectContent>
                   <SelectItem value="TOUS">Tous les domaines</SelectItem>
                   {getUniqueDomaines().map((domaine) => (
-                    <SelectItem key={domaine} value={domaine}>{domaine}</SelectItem>
+                    <SelectItem key={domaine} value={domaine}>
+                      {domaine}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -322,19 +364,20 @@ export default function AdminExposantsPage() {
               Liste des exposants ({filteredExposants.length})
             </CardTitle>
             <CardDescription>
-              Gérez les instituts et écoles participants à l'événement
+              Gérez les exposants participants à l'événement
             </CardDescription>
           </CardHeader>
           <CardContent>
             {filteredExposants.length === 0 ? (
               <div className="text-center py-12">
                 <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Aucun exposant trouvé</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  Aucun exposant trouvé
+                </h3>
                 <p className="text-gray-500 mb-4">
-                  {searchTerm || domaineFilter !== "TOUS" 
-                    ? "Aucun exposant ne correspond à vos critères de recherche." 
-                    : "Commencez par ajouter un exposant."
-                  }
+                  {searchTerm || domaineFilter !== "TOUS"
+                    ? "Aucun exposant ne correspond à vos critères de recherche."
+                    : "Commencez par ajouter un exposant."}
                 </p>
                 {!searchTerm && domaineFilter === "TOUS" && (
                   <Button onClick={() => setIsDialogOpen(true)}>
@@ -359,15 +402,17 @@ export default function AdminExposantsPage() {
                 <TableBody>
                   {filteredExposants.map((exposant) => (
                     <TableRow key={exposant.id}>
-                      <TableCell className="font-medium">{exposant.nom}</TableCell>
+                      <TableCell className="font-medium">
+                        {exposant.nom}
+                      </TableCell>
                       <TableCell>
                         <Badge variant="outline">{exposant.domaine}</Badge>
                       </TableCell>
                       <TableCell>
                         {exposant.siteWeb ? (
-                          <a 
-                            href={exposant.siteWeb} 
-                            target="_blank" 
+                          <a
+                            href={exposant.siteWeb}
+                            target="_blank"
                             rel="noopener noreferrer"
                             className="flex items-center gap-1 text-blue-600 hover:text-blue-800"
                           >
@@ -379,15 +424,25 @@ export default function AdminExposantsPage() {
                         )}
                       </TableCell>
                       <TableCell>
-                        <Badge variant={exposant.statutConfirmation === "CONFIRME" ? "default" : "secondary"}>
-                          {exposant.statutConfirmation === "CONFIRME" ? "Confirmé" : "En attente"}
+                        <Badge
+                          variant={
+                            exposant.statutConfirmation === "CONFIRME"
+                              ? "default"
+                              : "secondary"
+                          }
+                        >
+                          {exposant.statutConfirmation === "CONFIRME"
+                            ? "Confirmé"
+                            : "En attente"}
                         </Badge>
                       </TableCell>
                       <TableCell className="max-w-xs truncate">
                         {exposant.description}
                       </TableCell>
                       <TableCell>
-                        {new Date(exposant.createdAt).toLocaleDateString('fr-FR')}
+                        {new Date(exposant.createdAt).toLocaleDateString(
+                          "fr-FR"
+                        )}
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
@@ -424,10 +479,9 @@ export default function AdminExposantsPage() {
               {editingExposant ? "Modifier un exposant" : "Ajouter un exposant"}
             </DialogTitle>
             <DialogDescription>
-              {editingExposant 
+              {editingExposant
                 ? "Modifiez les informations de l'exposant ci-dessous"
-                : "Remplissez les informations pour ajouter un nouvel exposant"
-              }
+                : "Remplissez les informations pour ajouter un nouvel exposant"}
             </DialogDescription>
           </DialogHeader>
 
@@ -438,7 +492,9 @@ export default function AdminExposantsPage() {
                 <Input
                   id="nom"
                   value={formData.nom}
-                  onChange={(e) => setFormData(prev => ({ ...prev, nom: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, nom: e.target.value }))
+                  }
                   placeholder="Nom de l'établissement"
                   required
                 />
@@ -449,7 +505,12 @@ export default function AdminExposantsPage() {
                 <Input
                   id="domaine"
                   value={formData.domaine}
-                  onChange={(e) => setFormData(prev => ({ ...prev, domaine: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      domaine: e.target.value,
+                    }))
+                  }
                   placeholder="Ex: Ingénierie, Commerce, Art..."
                   required
                 />
@@ -461,7 +522,12 @@ export default function AdminExposantsPage() {
               <Textarea
                 id="description"
                 value={formData.description}
-                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    description: e.target.value,
+                  }))
+                }
                 placeholder="Description de l'établissement et des formations proposées"
                 rows={4}
                 required
@@ -475,16 +541,29 @@ export default function AdminExposantsPage() {
                   id="siteWeb"
                   type="url"
                   value={formData.siteWeb}
-                  onChange={(e) => setFormData(prev => ({ ...prev, siteWeb: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      siteWeb: e.target.value,
+                    }))
+                  }
                   placeholder="https://exemple.com"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="statutConfirmation">Statut de confirmation *</Label>
-                <Select value={formData.statutConfirmation} onValueChange={(value: "CONFIRME" | "EN_ATTENTE") => 
-                  setFormData(prev => ({ ...prev, statutConfirmation: value }))
-                }>
+                <Label htmlFor="statutConfirmation">
+                  Statut de confirmation *
+                </Label>
+                <Select
+                  value={formData.statutConfirmation}
+                  onValueChange={(value: "CONFIRME" | "EN_ATTENTE") =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      statutConfirmation: value,
+                    }))
+                  }
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Sélectionner le statut" />
                   </SelectTrigger>
@@ -502,7 +581,9 @@ export default function AdminExposantsPage() {
                 id="logo"
                 type="url"
                 value={formData.logo}
-                onChange={(e) => setFormData(prev => ({ ...prev, logo: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, logo: e.target.value }))
+                }
                 placeholder="URL du logo (facultatif)"
               />
             </div>
@@ -521,9 +602,9 @@ export default function AdminExposantsPage() {
                   </>
                 )}
               </Button>
-              <Button 
-                type="button" 
-                variant="outline" 
+              <Button
+                type="button"
+                variant="outline"
                 onClick={() => {
                   setIsDialogOpen(false);
                   resetForm();
