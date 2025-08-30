@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   CalendarDays,
@@ -79,6 +80,18 @@ export default function ProgrammePage() {
   const [selectedEvenement, setSelectedEvenement] =
     useState<EvenementAvecExposants | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Sélection manuelle d'événements pour le rapport
+  const [selectedEventIds, setSelectedEventIds] = useState<string[]>([]);
+  const toggleEventSelection = (id: string, checked: boolean | string) => {
+    setSelectedEventIds((prev) =>
+      checked
+        ? [...new Set([...prev, id])]
+        : prev.filter((x) => x !== id)
+    );
+  };
+  const clearSelection = () => setSelectedEventIds([]);
+  const selectAll = () => setSelectedEventIds(evenements.map((e) => e.id));
 
   useEffect(() => {
     fetchData();
@@ -587,7 +600,56 @@ export default function ProgrammePage() {
           </TabsContent>
 
           <TabsContent value="rapport-professionnel" className="mt-6">
-            <RapportProgramme evenements={evenements} />
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+              <div className="text-sm text-gray-600">
+                Sélectionnez les événements à inclure dans le rapport PDF.
+              </div>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={selectAll}>Tout sélectionner</Button>
+                <Button variant="outline" size="sm" onClick={clearSelection}>Tout désélectionner</Button>
+              </div>
+            </div>
+
+            <div className="border rounded-lg divide-y mb-6">
+              {evenements.length === 0 ? (
+                <div className="p-4 text-gray-500">Aucun événement disponible.</div>
+              ) : (
+                evenements
+                  .slice()
+                  .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+                  .map((e) => {
+                    const isMulti = !!(e.dateDebut && e.dateFin && e.dateDebut !== e.dateFin);
+                    const start = isMulti ? new Date(e.dateDebut!) : new Date(e.date);
+                    const end = isMulti ? new Date(e.dateFin!) : new Date(e.date);
+                    const days = Math.round((end.setHours(0,0,0,0) - start.setHours(0,0,0,0)) / (1000*60*60*24)) + 1;
+                    const checked = selectedEventIds.includes(e.id);
+                    return (
+                      <label key={e.id} className="flex items-center gap-3 p-4 hover:bg-gray-50 cursor-pointer">
+                        <Checkbox checked={checked} onCheckedChange={(v) => toggleEventSelection(e.id, v)} />
+                        <div className="flex-1">
+                          <div className="font-medium text-gray-900">
+                            {new Date(isMulti ? e.dateDebut! : e.date).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+                            {isMulti && (
+                              <>
+                                <span className="mx-1">→</span>
+                                {new Date(e.dateFin!).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+                              </>
+                            )}
+                          </div>
+                          <div className="text-sm text-gray-600">
+                            {e.nom || `Portes Ouvertes - ${e.lycee.nom}`}
+                          </div>
+                        </div>
+                        {isMulti && (
+                          <span className="px-2 py-0.5 text-xs border border-purple-300 text-purple-800 rounded">{days} jours</span>
+                        )}
+                      </label>
+                    );
+                  })
+              )}
+            </div>
+
+            <RapportProgramme evenements={evenements.filter((e) => selectedEventIds.includes(e.id))} />
           </TabsContent>
         </Tabs>
       </div>
