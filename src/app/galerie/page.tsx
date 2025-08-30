@@ -81,26 +81,47 @@ export default function GaleriePage() {
 
   const renderMediaPreview = (photo: Photo, isDialog = false) => {
     const hasError = imageErrors.has(photo.id);
-    const imageUrl = photo.fichier.startsWith("/")
-      ? photo.fichier
-      : `/uploads/${photo.fichier}`;
 
-    // Déterminer le type de fichier basé sur l'extension
-    const getFileType = (filename: string) => {
-      const ext = filename.toLowerCase().split(".").pop();
+    // Autoriser les URLs externes (http/https) et garder compatibilité avec fichiers locaux
+    const isExternalUrl = (value: string) => /^https?:\/\//i.test(value);
+    const rawPath = (photo.fichier || "").trim();
+
+    // Construire l'URL finale à afficher
+    const imageUrl = isExternalUrl(rawPath)
+      ? rawPath
+      : rawPath.startsWith("/")
+      ? rawPath
+      : `/uploads/${rawPath}`;
+
+    // Déterminer le type de fichier basé sur l'extension, en gérant les URLs avec query/hash
+    const getFileType = (input: string) => {
+      let pathname = input;
+      try {
+        // Si c'est une URL valide, récupérer seulement le pathname
+        const u = new URL(input);
+        pathname = u.pathname;
+      } catch {
+        // sinon on garde la chaîne telle quelle
+      }
+      const lastSegment = pathname.split("/").pop() || pathname;
+      const clean = lastSegment.split("?")[0].split("#")[0];
+      const ext = clean.toLowerCase().split(".").pop();
+
       if (
         ["jpg", "jpeg", "png", "gif", "webp", "avif", "svg"].includes(ext || "")
       ) {
-        return "image";
-      } else if (["mp4", "webm", "ogg", "avi", "mov"].includes(ext || "")) {
-        return "video";
-      } else if (["pdf"].includes(ext || "")) {
-        return "pdf";
+        return "image" as const;
       }
-      return "document";
+      if (["mp4", "webm", "ogg", "avi", "mov"].includes(ext || "")) {
+        return "video" as const;
+      }
+      if (["pdf"].includes(ext || "")) {
+        return "pdf" as const;
+      }
+      return "document" as const;
     };
 
-    const fileType = getFileType(photo.fichier);
+    const fileType = getFileType(imageUrl);
 
     // Pour les PDFs, on affiche une prévisualisation ou on ouvre dans un nouvel onglet
     if (fileType === "pdf") {
