@@ -139,7 +139,7 @@ export default function CompteARebours({
   }
 
   return (
-    <Card className={`w-full bg-blue-600  text-white ${className}`}>
+    <Card className={`w-full bg-gradient-to-r from-blue-600 to-purple-600  text-white ${className}`}>
       <CardHeader className="text-center">
         <CardTitle className="flex items-center justify-center gap-3 text-3xl">
           <Timer className="h-6 w-6" />
