@@ -41,24 +41,28 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Création d'un token JWT simple (dans un environnement réel, on utiliserait une vraie librairie JWT)
-    const token = Buffer.from(
-      JSON.stringify({
-        userId: user.id,
-        email: user.email,
-        role: user.role,
-        timestamp: Date.now(),
-      })
-    ).toString("base64");
+    // Durée de session (rolling): 30 minutes
+    const sessionDurationMs = 30 * 60 * 1000;
+    const now = Date.now();
+    const payload = {
+      userId: user.id,
+      email: user.email,
+      role: user.role,
+      iat: now,
+      exp: now + sessionDurationMs,
+    };
+
+    const cookieValue = Buffer.from(JSON.stringify(payload)).toString("base64");
 
     // Journalisation de la connexion (pour la sécurité)
     console.log(
       `Connexion admin réussie: ${email} - ${new Date().toISOString()}`
     );
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       message: "Connexion réussie",
-      token,
+      // Le token reste renvoyé pour compatibilité, mais la session se base sur le cookie
+      token: cookieValue,
       user: {
         id: user.id,
         email: user.email,
@@ -66,6 +70,19 @@ export async function POST(request: NextRequest) {
         role: user.role,
       },
     });
+
+    // Définir un cookie httpOnly pour la session admin
+    response.cookies.set({
+      name: "admin_session",
+      value: cookieValue,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      sameSite: "lax",
+      maxAge: sessionDurationMs / 1000,
+    });
+
+    return response;
   } catch (error) {
     console.error("Erreur lors de la connexion admin:", error);
 
