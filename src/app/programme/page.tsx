@@ -120,23 +120,40 @@ export default function ProgrammePage() {
     return heure.slice(0, 5); // Format HH:MM
   };
 
+  const formatISODate = (d: Date) => d.toISOString().split("T")[0];
+
+  const getEventDates = (e: Evenement): string[] => {
+    const start = e.dateDebut ? new Date(e.dateDebut) : new Date(e.date);
+    const end = e.dateFin ? new Date(e.dateFin) : new Date(e.date);
+    // Normalize to midnight to avoid timezone drift
+    start.setHours(0, 0, 0, 0);
+    end.setHours(0, 0, 0, 0);
+    const dates: string[] = [];
+    const cur = new Date(start);
+    while (cur <= end) {
+      dates.push(formatISODate(cur));
+      cur.setDate(cur.getDate() + 1);
+    }
+    return dates;
+  };
+
   const getUniqueDates = () => {
-    const dates = evenements.map((e) => e.date);
-    return [...new Set(dates)].sort();
+    const allDates = evenements.flatMap(getEventDates);
+    return [...new Set(allDates)].sort();
   };
 
   const filteredEvenements =
     selectedDate === "all"
       ? evenements
-      : evenements.filter((e) => e.date === selectedDate);
+      : evenements.filter((e) => getEventDates(e).includes(selectedDate));
 
   const groupEvenementsByDate = () => {
     const grouped = filteredEvenements.reduce((acc, evenement) => {
-      const date = evenement.date;
-      if (!acc[date]) {
-        acc[date] = [];
-      }
-      acc[date].push(evenement);
+      const dates = getEventDates(evenement);
+      dates.forEach((date) => {
+        if (!acc[date]) acc[date] = [];
+        acc[date].push(evenement);
+      });
       return acc;
     }, {} as Record<string, EvenementAvecExposants[]>);
 
@@ -354,7 +371,9 @@ export default function ProgrammePage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-gray-600">Participants</p>
+                  <p className="text-gray-600">
+                    Lycées organisateurs (lieux des événements)
+                  </p>
                 </CardContent>
               </Card>
 
@@ -416,6 +435,29 @@ export default function ProgrammePage() {
                                     {formatHeure(evenement.heureDebut)} -{" "}
                                     {formatHeure(evenement.heureFin)}
                                   </Badge>
+                                  {evenement.dateDebut &&
+                                    evenement.dateFin &&
+                                    evenement.dateDebut !==
+                                      evenement.dateFin && (
+                                      <Badge
+                                        variant="outline"
+                                        className="ml-2 text-blue-800 border-blue-300"
+                                      >
+                                        {new Date(
+                                          evenement.dateDebut
+                                        ).toLocaleDateString("fr-FR", {
+                                          day: "2-digit",
+                                          month: "2-digit",
+                                        })}
+                                        {" → "}
+                                        {new Date(
+                                          evenement.dateFin
+                                        ).toLocaleDateString("fr-FR", {
+                                          day: "2-digit",
+                                          month: "2-digit",
+                                        })}
+                                      </Badge>
+                                    )}
                                   {evenement.exposantsCount > 0 && (
                                     <Badge
                                       variant="outline"
