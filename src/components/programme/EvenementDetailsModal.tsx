@@ -147,9 +147,7 @@ export default function EvenementDetailsModal({
           <DialogTitle className="text-2xl font-bold">
             {evenement.nom || `Portes Ouvertes - ${evenement.lycee.nom}`}
           </DialogTitle>
-          <DialogDescription>
-            Détails complets de l'événement et programme des exposants
-          </DialogDescription>
+          <DialogDescription>Détails complets de l'événement</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6">
@@ -256,139 +254,8 @@ export default function EvenementDetailsModal({
             </CardContent>
           </Card>
 
-          {/* Programme des exposants */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <BookOpen className="h-5 w-5" />
-                Programme des exposants
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {loading ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                </div>
-              ) : exposants.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  <Users className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-                  <p>
-                    Aucun exposant n'a encore publié son programme pour cet
-                    événement.
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  {exposants.map((exposant) => (
-                    <div key={exposant.id} className="border rounded-lg p-4">
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex items-center gap-3">
-                          {exposant.logo && (
-                            <img
-                              src={exposant.logo}
-                              alt={`Logo ${exposant.nom}`}
-                              className="w-12 h-12 object-contain rounded"
-                            />
-                          )}
-                          <div>
-                            <h4 className="font-semibold text-lg">
-                              {exposant.nom}
-                            </h4>
-                            <p className="text-gray-600">{exposant.domaine}</p>
-                          </div>
-                        </div>
-                        {exposant.siteWeb && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() =>
-                              window.open(exposant.siteWeb, "_blank")
-                            }
-                          >
-                            <ExternalLink className="h-4 w-4 mr-1" />
-                            Site web
-                          </Button>
-                        )}
-                      </div>
-
-                      <p className="text-gray-700 mb-4">
-                        {exposant.description}
-                      </p>
-
-                      {exposant.programmes.length > 0 && (
-                        <div>
-                          <h5 className="font-medium mb-3">
-                            Activités programmées :
-                          </h5>
-                          <div className="space-y-3">
-                            {exposant.programmes
-                              .sort((a, b) => a.ordre - b.ordre)
-                              .map((programme) => (
-                                <div
-                                  key={programme.id}
-                                  className="bg-gray-50 rounded-lg p-3"
-                                >
-                                  <div className="flex items-start justify-between mb-2">
-                                    <h6 className="font-medium">
-                                      {programme.titre}
-                                    </h6>
-                                    <div className="flex items-center gap-2">
-                                      <Badge
-                                        className={getTypeBadgeColor(
-                                          programme.type
-                                        )}
-                                      >
-                                        {getTypeIcon(programme.type)}
-                                        <span className="ml-1">
-                                          {programme.type}
-                                        </span>
-                                      </Badge>
-                                      <Badge variant="outline">
-                                        <Clock className="h-3 w-3 mr-1" />
-                                        {formatHeure(programme.heure)}
-                                      </Badge>
-                                    </div>
-                                  </div>
-
-                                  <p className="text-gray-600 text-sm mb-2">
-                                    {programme.description}
-                                  </p>
-
-                                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs text-gray-500">
-                                    <div>
-                                      <span className="font-medium">
-                                        Durée:
-                                      </span>{" "}
-                                      {programme.duree}
-                                    </div>
-                                    <div>
-                                      <span className="font-medium">Lieu:</span>{" "}
-                                      {programme.lieu}
-                                    </div>
-                                    <div>
-                                      <span className="font-medium">
-                                        Public:
-                                      </span>{" "}
-                                      {programme.public}
-                                    </div>
-                                    <div>
-                                      <span className="font-medium">
-                                        Animateur:
-                                      </span>{" "}
-                                      {programme.animateur}
-                                    </div>
-                                  </div>
-                                </div>
-                              ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          {/* Programme des exposants (masqué à la demande) */}
+          {/* Section retirée: activités programmées par les participants */}
         </div>
       </DialogContent>
     </Dialog>
