@@ -142,6 +142,13 @@ export default function ProgrammePage() {
     return [...new Set(allDates)].sort();
   };
 
+  // Pour les événements multi-jours: n'afficher que sous le premier jour
+  const isFirstDayForEvent = (e: EvenementAvecExposants, date: string) => {
+    const start = e.dateDebut ? new Date(e.dateDebut) : new Date(e.date);
+    start.setHours(0, 0, 0, 0);
+    return date === formatISODate(start);
+  };
+
   const filteredEvenements =
     selectedDate === "all"
       ? evenements
@@ -152,7 +159,10 @@ export default function ProgrammePage() {
       const dates = getEventDates(evenement);
       dates.forEach((date) => {
         if (!acc[date]) acc[date] = [];
-        acc[date].push(evenement);
+        // Ajouter l'événement uniquement pour son premier jour
+        if (isFirstDayForEvent(evenement, date)) {
+          acc[date].push(evenement);
+        }
       });
       return acc;
     }, {} as Record<string, EvenementAvecExposants[]>);
