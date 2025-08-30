@@ -107,7 +107,7 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* AMCOPE Tanger-Asilah */}
+              {/* AMCOPE */}
               <div className="bg-white rounded-lg shadow-lg p-8 text-center">
                 <div className="flex justify-center mb-4">
                   <div className="w-20 h-20 bg-green-600 rounded-full flex items-center justify-center">
@@ -131,7 +131,7 @@ export default function Home() {
       </section>
 
       {/* Informations clés */}
-      <section className="py-0">
+      <section className="pt-14">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
