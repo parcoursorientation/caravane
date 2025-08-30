@@ -3,25 +3,61 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { 
-  Building2, 
-  Plus, 
-  Edit, 
-  Trash2, 
-  Eye, 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Building2,
+  Plus,
+  Edit,
+  Trash2,
+  Eye,
   ArrowLeft,
   Save,
   X,
-  Search
+  Search,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -57,7 +93,7 @@ export default function AdminLyceesPage() {
     adresse: "",
     type: "",
     description: "",
-    logo: ""
+    logo: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
@@ -76,12 +112,12 @@ export default function AdminLyceesPage() {
 
   const fetchLycees = async () => {
     try {
-      console.log('🔄 Récupération des lycées depuis l\'API...');
+      console.log("🔄 Récupération des lycées depuis l'API...");
       const token = localStorage.getItem("adminToken");
       const response = await fetch("/api/admin/lycees", {
         headers: {
-          "Authorization": `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       if (response.ok) {
@@ -89,7 +125,10 @@ export default function AdminLyceesPage() {
         console.log(`✅ ${data.data.length} lycées récupérés depuis l'API`);
         setLycees(data.data);
       } else {
-        console.error('❌ Erreur lors de la récupération des lycées:', response.status);
+        console.error(
+          "❌ Erreur lors de la récupération des lycées:",
+          response.status
+        );
         toast({
           title: "Erreur",
           description: "Erreur lors du chargement des lycées",
@@ -97,7 +136,7 @@ export default function AdminLyceesPage() {
         });
       }
     } catch (error) {
-      console.error('❌ Erreur de connexion au serveur:', error);
+      console.error("❌ Erreur de connexion au serveur:", error);
       toast({
         title: "Erreur",
         description: "Erreur de connexion au serveur",
@@ -114,38 +153,45 @@ export default function AdminLyceesPage() {
 
     try {
       const token = localStorage.getItem("adminToken");
-      const url = editingLycee 
+      const url = editingLycee
         ? `/api/admin/lycees/${editingLycee.id}`
         : "/api/admin/lycees";
-      
+
       const method = editingLycee ? "PUT" : "POST";
-      
+
       console.log(`🔄 ${method} ${url} - Envoi des données...`);
-      console.log('📝 Données envoyées:', formData);
-      
+      console.log("📝 Données envoyées:", formData);
+
       const response = await fetch(url, {
         method,
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formData),
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        console.log(`✅ ${editingLycee ? 'Mise à jour' : 'Création'} réussie`);
+        console.log(`✅ ${editingLycee ? "Mise à jour" : "Création"} réussie`);
         toast({
           title: "Succès",
-          description: editingLycee ? "Lycée mis à jour avec succès" : "Lycée créé avec succès",
+          description: editingLycee
+            ? "Lycée mis à jour avec succès"
+            : "Lycée créé avec succès",
           variant: "default",
         });
         fetchLycees();
         resetForm();
         setIsDialogOpen(false);
       } else {
-        console.error(`❌ Erreur lors de ${editingLycee ? 'la mise à jour' : 'la création'}:`, data.error);
+        console.error(
+          `❌ Erreur lors de ${
+            editingLycee ? "la mise à jour" : "la création"
+          }:`,
+          data.error
+        );
         toast({
           title: "Erreur",
           description: data.error || "Une erreur s'est produite",
@@ -153,7 +199,7 @@ export default function AdminLyceesPage() {
         });
       }
     } catch (error) {
-      console.error('❌ Erreur de connexion au serveur:', error);
+      console.error("❌ Erreur de connexion au serveur:", error);
       toast({
         title: "Erreur",
         description: "Erreur de connexion au serveur",
@@ -171,7 +217,7 @@ export default function AdminLyceesPage() {
       adresse: lycee.adresse,
       type: lycee.type,
       description: lycee.description || "",
-      logo: lycee.logo || ""
+      logo: lycee.logo || "",
     });
     setIsDialogOpen(true);
   };
@@ -185,13 +231,15 @@ export default function AdminLyceesPage() {
     if (!deletingLycee) return;
 
     try {
-      console.log(`🔄 DELETE /api/admin/lycees/${deletingLycee.id} - Suppression du lycée...`);
+      console.log(
+        `🔄 DELETE /api/admin/lycees/${deletingLycee.id} - Suppression du lycée...`
+      );
       const token = localStorage.getItem("adminToken");
       const response = await fetch(`/api/admin/lycees/${deletingLycee.id}`, {
         method: "DELETE",
         headers: {
-          "Authorization": `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       if (response.ok) {
@@ -204,7 +252,7 @@ export default function AdminLyceesPage() {
         fetchLycees();
       } else {
         const data = await response.json();
-        console.error('❌ Erreur lors de la suppression:', data.error);
+        console.error("❌ Erreur lors de la suppression:", data.error);
         toast({
           title: "Erreur",
           description: data.error || "Erreur lors de la suppression",
@@ -212,7 +260,7 @@ export default function AdminLyceesPage() {
         });
       }
     } catch (error) {
-      console.error('❌ Erreur de connexion au serveur:', error);
+      console.error("❌ Erreur de connexion au serveur:", error);
       toast({
         title: "Erreur",
         description: "Erreur de connexion au serveur",
@@ -231,13 +279,14 @@ export default function AdminLyceesPage() {
       adresse: "",
       type: "",
       description: "",
-      logo: ""
+      logo: "",
     });
   };
 
-  const filteredLycees = lycees.filter(lycee =>
-    lycee.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    lycee.adresse.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredLycees = lycees.filter(
+    (lycee) =>
+      lycee.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      lycee.adresse.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   if (loading) {
@@ -258,11 +307,17 @@ export default function AdminLyceesPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-4">
-              <Button variant="outline" size="sm" onClick={() => router.push("/admin")}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => router.push("/admin")}
+              >
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Retour
               </Button>
-              <h1 className="text-xl font-semibold text-gray-900">Gestion des Lycées</h1>
+              <h1 className="text-xl font-semibold text-gray-900">
+                Gestion des Lycées
+              </h1>
             </div>
             <Button onClick={() => setIsDialogOpen(true)}>
               <Plus className="h-4 w-4 mr-2" />
@@ -296,16 +351,20 @@ export default function AdminLyceesPage() {
               Liste des lycées ({filteredLycees.length})
             </CardTitle>
             <CardDescription>
-              Gérez les lycées participants à l'événement
+              Gérez les lycées organisateurs (lieux des événements)
             </CardDescription>
           </CardHeader>
           <CardContent>
             {filteredLycees.length === 0 ? (
               <div className="text-center py-12">
                 <Building2 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Aucun lycée trouvé</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  Aucun lycée trouvé
+                </h3>
                 <p className="text-gray-500 mb-4">
-                  {searchTerm ? "Aucun lycée ne correspond à votre recherche." : "Commencez par ajouter un lycée."}
+                  {searchTerm
+                    ? "Aucun lycée ne correspond à votre recherche."
+                    : "Commencez par ajouter un lycée."}
                 </p>
                 {!searchTerm && (
                   <Button onClick={() => setIsDialogOpen(true)}>
@@ -332,7 +391,11 @@ export default function AdminLyceesPage() {
                       <TableCell className="font-medium">{lycee.nom}</TableCell>
                       <TableCell>{lycee.adresse}</TableCell>
                       <TableCell>
-                        <Badge variant={lycee.type === "PUBLIC" ? "default" : "secondary"}>
+                        <Badge
+                          variant={
+                            lycee.type === "PUBLIC" ? "default" : "secondary"
+                          }
+                        >
                           {lycee.type === "PUBLIC" ? "Public" : "Privé"}
                         </Badge>
                       </TableCell>
@@ -340,7 +403,7 @@ export default function AdminLyceesPage() {
                         {lycee.description || "-"}
                       </TableCell>
                       <TableCell>
-                        {new Date(lycee.createdAt).toLocaleDateString('fr-FR')}
+                        {new Date(lycee.createdAt).toLocaleDateString("fr-FR")}
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
@@ -377,10 +440,9 @@ export default function AdminLyceesPage() {
               {editingLycee ? "Modifier un lycée" : "Ajouter un lycée"}
             </DialogTitle>
             <DialogDescription>
-              {editingLycee 
+              {editingLycee
                 ? "Modifiez les informations du lycée ci-dessous"
-                : "Remplissez les informations pour ajouter un nouveau lycée"
-              }
+                : "Remplissez les informations pour ajouter un nouveau lycée"}
             </DialogDescription>
           </DialogHeader>
 
@@ -391,7 +453,9 @@ export default function AdminLyceesPage() {
                 <Input
                   id="nom"
                   value={formData.nom}
-                  onChange={(e) => setFormData(prev => ({ ...prev, nom: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, nom: e.target.value }))
+                  }
                   placeholder="Nom du lycée"
                   required
                 />
@@ -399,9 +463,12 @@ export default function AdminLyceesPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="type">Type *</Label>
-                <Select value={formData.type} onValueChange={(value: "PUBLIC" | "PRIVE") => 
-                  setFormData(prev => ({ ...prev, type: value }))
-                }>
+                <Select
+                  value={formData.type}
+                  onValueChange={(value: "PUBLIC" | "PRIVE") =>
+                    setFormData((prev) => ({ ...prev, type: value }))
+                  }
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Sélectionner le type" />
                   </SelectTrigger>
@@ -418,7 +485,9 @@ export default function AdminLyceesPage() {
               <Textarea
                 id="adresse"
                 value={formData.adresse}
-                onChange={(e) => setFormData(prev => ({ ...prev, adresse: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, adresse: e.target.value }))
+                }
                 placeholder="Adresse complète du lycée"
                 rows={2}
                 required
@@ -430,7 +499,12 @@ export default function AdminLyceesPage() {
               <Textarea
                 id="description"
                 value={formData.description}
-                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    description: e.target.value,
+                  }))
+                }
                 placeholder="Description du lycée (facultatif)"
                 rows={3}
               />
@@ -441,7 +515,9 @@ export default function AdminLyceesPage() {
               <Input
                 id="logo"
                 value={formData.logo}
-                onChange={(e) => setFormData(prev => ({ ...prev, logo: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, logo: e.target.value }))
+                }
                 placeholder="URL du logo (facultatif)"
               />
             </div>
@@ -460,9 +536,9 @@ export default function AdminLyceesPage() {
                   </>
                 )}
               </Button>
-              <Button 
-                type="button" 
-                variant="outline" 
+              <Button
+                type="button"
+                variant="outline"
                 onClick={() => {
                   setIsDialogOpen(false);
                   resetForm();
@@ -477,18 +553,22 @@ export default function AdminLyceesPage() {
       </Dialog>
 
       {/* AlertDialog pour confirmer la suppression */}
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
             <AlertDialogDescription>
-              Êtes-vous sûr de vouloir supprimer le lycée "{deletingLycee?.nom}" ? 
-              Cette action est irréversible et supprimera définitivement toutes les données associées.
+              Êtes-vous sûr de vouloir supprimer le lycée "{deletingLycee?.nom}"
+              ? Cette action est irréversible et supprimera définitivement
+              toutes les données associées.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Annuler</AlertDialogCancel>
-            <AlertDialogAction 
+            <AlertDialogAction
               onClick={handleDeleteConfirm}
               className="bg-red-600 hover:bg-red-700"
             >
