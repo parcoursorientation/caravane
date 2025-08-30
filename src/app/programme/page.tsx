@@ -85,9 +85,7 @@ export default function ProgrammePage() {
   const [selectedEventIds, setSelectedEventIds] = useState<string[]>([]);
   const toggleEventSelection = (id: string, checked: boolean | string) => {
     setSelectedEventIds((prev) =>
-      checked
-        ? [...new Set([...prev, id])]
-        : prev.filter((x) => x !== id)
+      checked ? [...new Set([...prev, id])] : prev.filter((x) => x !== id)
     );
   };
   const clearSelection = () => setSelectedEventIds([]);
@@ -431,120 +429,131 @@ export default function ProgrammePage() {
                 </CardContent>
               </Card>
             ) : (
-              Object.entries(groupEvenementsByDate()).map(
-                ([date, evenementsDuJour]) => (
-                  <div key={date} className="mb-12">
-                    <div className="mb-6">
-                      <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                        {formatDate(date)}
-                      </h2>
-                      <div className="h-1 w-20 bg-blue-600 rounded"></div>
-                    </div>
-
-                    <div className="grid gap-6">
-                      {evenementsDuJour.map((evenement) => (
-                        <Card
-                          key={evenement.id}
-                          className="hover:shadow-lg transition-shadow"
-                        >
-                          <CardContent className="p-6">
-                            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-                              <div className="flex-1">
-                                <div className="flex items-center gap-3 mb-3">
-                                  <Badge
-                                    variant="secondary"
-                                    className="bg-blue-100 text-blue-800"
-                                  >
-                                    {formatHeure(evenement.heureDebut)} -{" "}
-                                    {formatHeure(evenement.heureFin)}
-                                  </Badge>
-                                  {evenement.dateDebut &&
-                                    evenement.dateFin &&
-                                    evenement.dateDebut !==
-                                      evenement.dateFin && (
-                                      <Badge
-                                        variant="outline"
-                                        className="ml-2 text-blue-800 border-blue-300"
-                                      >
-                                        {new Date(
-                                          evenement.dateDebut
-                                        ).toLocaleDateString("fr-FR", {
-                                          day: "2-digit",
-                                          month: "2-digit",
-                                        })}
-                                        {" → "}
-                                        {new Date(
-                                          evenement.dateFin
-                                        ).toLocaleDateString("fr-FR", {
-                                          day: "2-digit",
-                                          month: "2-digit",
-                                        })}
-                                      </Badge>
-                                      <Badge variant="outline" className="ml-2 text-purple-800 border-purple-300">
-                                        {Math.round((new Date(evenement.dateFin).setHours(0,0,0,0) - new Date(evenement.dateDebut).setHours(0,0,0,0)) / (1000*60*60*24)) + 1} jours
-                                      </Badge>
-                                    )}
-                                  {evenement.exposantsCount > 0 && (
+              <div className="grid gap-6">
+                {filteredEvenements
+                  .slice()
+                  .sort((a, b) => {
+                    const aDate = new Date(a.dateDebut ?? a.date).getTime();
+                    const bDate = new Date(b.dateDebut ?? b.date).getTime();
+                    if (aDate !== bDate) return aDate - bDate;
+                    return a.heureDebut.localeCompare(b.heureDebut);
+                  })
+                  .map((evenement) => (
+                    <Card
+                      key={evenement.id}
+                      className="hover:shadow-lg transition-shadow"
+                    >
+                      <CardContent className="p-6">
+                        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-3">
+                              <Badge
+                                variant="secondary"
+                                className="bg-blue-100 text-blue-800"
+                              >
+                                {formatHeure(evenement.heureDebut)} -{" "}
+                                {formatHeure(evenement.heureFin)}
+                              </Badge>
+                              {evenement.dateDebut &&
+                                evenement.dateFin &&
+                                evenement.dateDebut !== evenement.dateFin && (
+                                  <>
                                     <Badge
                                       variant="outline"
-                                      className="text-green-600 border-green-600"
+                                      className="ml-2 text-blue-800 border-blue-300"
                                     >
-                                      {evenement.exposantsCount} exposant
-                                      {evenement.exposantsCount > 1 ? "s" : ""}
+                                      {new Date(
+                                        evenement.dateDebut
+                                      ).toLocaleDateString("fr-FR", {
+                                        day: "2-digit",
+                                        month: "2-digit",
+                                      })}
+                                      {" → "}
+                                      {new Date(
+                                        evenement.dateFin
+                                      ).toLocaleDateString("fr-FR", {
+                                        day: "2-digit",
+                                        month: "2-digit",
+                                      })}
                                     </Badge>
-                                  )}
-                                </div>
-
-                                <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                                  {evenement.nom ||
-                                    `Portes Ouvertes - ${evenement.lycee.nom}`}
-                                </h3>
-
-                                <div className="flex items-center gap-4 text-gray-600 mb-3">
-                                  <div className="flex items-center gap-1">
-                                    <MapPin className="h-4 w-4" />
-                                    <span>{evenement.lycee.nom}</span>
-                                  </div>
-                                  {evenement.ville && (
-                                    <div className="flex items-center gap-1">
-                                      <span>{evenement.ville}</span>
-                                    </div>
-                                  )}
-                                </div>
-
-                                <p className="text-gray-600 text-sm">
-                                  {evenement.lycee.adresse}
-                                </p>
-                              </div>
-
-                              <div className="flex flex-col sm:flex-row gap-2">
-                                <Button
+                                    <Badge
+                                      variant="outline"
+                                      className="ml-2 text-purple-800 border-purple-300"
+                                    >
+                                      {Math.round(
+                                        (new Date(evenement.dateFin).setHours(
+                                          0,
+                                          0,
+                                          0,
+                                          0
+                                        ) -
+                                          new Date(
+                                            evenement.dateDebut
+                                          ).setHours(0, 0, 0, 0)) /
+                                          (1000 * 60 * 60 * 24)
+                                      ) + 1}{" "}
+                                      jours
+                                    </Badge>
+                                  </>
+                                )}
+                              {evenement.exposantsCount > 0 && (
+                                <Badge
                                   variant="outline"
-                                  size="sm"
-                                  onClick={() => {
-                                    setSelectedEvenement(evenement);
-                                    setIsModalOpen(true);
-                                  }}
+                                  className="text-green-600 border-green-600"
                                 >
-                                  Voir les détails
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  onClick={() => {
-                                    window.location.href = `/inscription?evenement=${evenement.id}`;
-                                  }}
-                                >
-                                  S'inscrire
-                                </Button>
-                              </div>
+                                  {evenement.exposantsCount} exposant
+                                  {evenement.exposantsCount > 1 ? "s" : ""}
+                                </Badge>
+                              )}
                             </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  </div>
-                )
-              )
+
+                            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                              {evenement.nom ||
+                                `Portes Ouvertes - ${evenement.lycee.nom}`}
+                            </h3>
+
+                            <div className="flex items-center gap-4 text-gray-600 mb-3">
+                              <div className="flex items-center gap-1">
+                                <MapPin className="h-4 w-4" />
+                                <span>{evenement.lycee.nom}</span>
+                              </div>
+                              {evenement.ville && (
+                                <div className="flex items-center gap-1">
+                                  <span>{evenement.ville}</span>
+                                </div>
+                              )}
+                            </div>
+
+                            <p className="text-gray-600 text-sm">
+                              {evenement.lycee.adresse}
+                            </p>
+                          </div>
+
+                          <div className="flex flex-col sm:flex-row gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setSelectedEvenement(evenement);
+                                setIsModalOpen(true);
+                              }}
+                            >
+                              Voir les détails
+                            </Button>
+                            <Button
+                              size="sm"
+                              onClick={() => {
+                                window.location.href = `/inscription?evenement=${evenement.id}`;
+                              }}
+                            >
+                              S'inscrire
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+              </div>
             )}
 
             {/* Informations pratiques */}
@@ -605,34 +614,77 @@ export default function ProgrammePage() {
                 Sélectionnez les événements à inclure dans le rapport PDF.
               </div>
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={selectAll}>Tout sélectionner</Button>
-                <Button variant="outline" size="sm" onClick={clearSelection}>Tout désélectionner</Button>
+                <Button variant="outline" size="sm" onClick={selectAll}>
+                  Tout sélectionner
+                </Button>
+                <Button variant="outline" size="sm" onClick={clearSelection}>
+                  Tout désélectionner
+                </Button>
               </div>
             </div>
 
             <div className="border rounded-lg divide-y mb-6">
               {evenements.length === 0 ? (
-                <div className="p-4 text-gray-500">Aucun événement disponible.</div>
+                <div className="p-4 text-gray-500">
+                  Aucun événement disponible.
+                </div>
               ) : (
                 evenements
                   .slice()
-                  .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+                  .sort(
+                    (a, b) =>
+                      new Date(a.date).getTime() - new Date(b.date).getTime()
+                  )
                   .map((e) => {
-                    const isMulti = !!(e.dateDebut && e.dateFin && e.dateDebut !== e.dateFin);
-                    const start = isMulti ? new Date(e.dateDebut!) : new Date(e.date);
-                    const end = isMulti ? new Date(e.dateFin!) : new Date(e.date);
-                    const days = Math.round((end.setHours(0,0,0,0) - start.setHours(0,0,0,0)) / (1000*60*60*24)) + 1;
+                    const isMulti = !!(
+                      e.dateDebut &&
+                      e.dateFin &&
+                      e.dateDebut !== e.dateFin
+                    );
+                    const start = isMulti
+                      ? new Date(e.dateDebut!)
+                      : new Date(e.date);
+                    const end = isMulti
+                      ? new Date(e.dateFin!)
+                      : new Date(e.date);
+                    const days =
+                      Math.round(
+                        (end.setHours(0, 0, 0, 0) -
+                          start.setHours(0, 0, 0, 0)) /
+                          (1000 * 60 * 60 * 24)
+                      ) + 1;
                     const checked = selectedEventIds.includes(e.id);
                     return (
-                      <label key={e.id} className="flex items-center gap-3 p-4 hover:bg-gray-50 cursor-pointer">
-                        <Checkbox checked={checked} onCheckedChange={(v) => toggleEventSelection(e.id, v)} />
+                      <label
+                        key={e.id}
+                        className="flex items-center gap-3 p-4 hover:bg-gray-50 cursor-pointer"
+                      >
+                        <Checkbox
+                          checked={checked}
+                          onCheckedChange={(v) => toggleEventSelection(e.id, v)}
+                        />
                         <div className="flex-1">
                           <div className="font-medium text-gray-900">
-                            {new Date(isMulti ? e.dateDebut! : e.date).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+                            {new Date(
+                              isMulti ? e.dateDebut! : e.date
+                            ).toLocaleDateString("fr-FR", {
+                              weekday: "long",
+                              day: "numeric",
+                              month: "long",
+                              year: "numeric",
+                            })}
                             {isMulti && (
                               <>
                                 <span className="mx-1">→</span>
-                                {new Date(e.dateFin!).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+                                {new Date(e.dateFin!).toLocaleDateString(
+                                  "fr-FR",
+                                  {
+                                    weekday: "long",
+                                    day: "numeric",
+                                    month: "long",
+                                    year: "numeric",
+                                  }
+                                )}
                               </>
                             )}
                           </div>
@@ -641,7 +693,9 @@ export default function ProgrammePage() {
                           </div>
                         </div>
                         {isMulti && (
-                          <span className="px-2 py-0.5 text-xs border border-purple-300 text-purple-800 rounded">{days} jours</span>
+                          <span className="px-2 py-0.5 text-xs border border-purple-300 text-purple-800 rounded">
+                            {days} jours
+                          </span>
                         )}
                       </label>
                     );
@@ -649,7 +703,11 @@ export default function ProgrammePage() {
               )}
             </div>
 
-            <RapportProgramme evenements={evenements.filter((e) => selectedEventIds.includes(e.id))} />
+            <RapportProgramme
+              evenements={evenements.filter((e) =>
+                selectedEventIds.includes(e.id)
+              )}
+            />
           </TabsContent>
         </Tabs>
       </div>
