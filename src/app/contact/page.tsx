@@ -2,12 +2,34 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Mail, Phone, MapPin, Clock, Send, CheckCircle, AlertCircle, MessageCircle, Users } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Mail,
+  Phone,
+  MapPin,
+  Clock,
+  Send,
+  CheckCircle,
+  AlertCircle,
+  MessageCircle,
+  Users,
+} from "lucide-react";
 import Layout from "@/components/layout/Layout";
 
 interface FormData {
@@ -32,11 +54,13 @@ export default function ContactPage() {
     email: "",
     sujet: "",
     message: "",
-    typeDemande: ""
+    typeDemande: "",
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error">("idle");
+  const [submitStatus, setSubmitStatus] = useState<
+    "idle" | "success" | "error"
+  >("idle");
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
@@ -71,7 +95,7 @@ export default function ContactPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -88,13 +112,19 @@ export default function ContactPage() {
         body: JSON.stringify({
           nom: formData.nom,
           email: formData.email,
-          message: `Sujet: ${formData.sujet}\n\nType: ${formData.typeDemande}\n\n${formData.message}`
+          message: `Sujet: ${formData.sujet}\n\nType: ${formData.typeDemande}\n\n${formData.message}`,
         }),
       });
 
       if (response.ok) {
         setSubmitStatus("success");
-        setFormData({ nom: "", email: "", sujet: "", message: "", typeDemande: "" });
+        setFormData({
+          nom: "",
+          email: "",
+          sujet: "",
+          message: "",
+          typeDemande: "",
+        });
       } else {
         setSubmitStatus("error");
       }
@@ -106,10 +136,10 @@ export default function ContactPage() {
   };
 
   const handleInputChange = (field: keyof FormData, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
     // Clear error when user starts typing
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: undefined }));
+      setErrors((prev) => ({ ...prev, [field]: undefined }));
     }
   };
 
@@ -117,7 +147,7 @@ export default function ContactPage() {
     const now = new Date();
     const jour = now.getDay();
     const heure = now.getHours();
-    
+
     // Jours ouvrables: Lundi(1) à Vendredi(5)
     if (jour >= 1 && jour <= 5 && heure >= 9 && heure < 18) {
       return "moins d'une heure";
@@ -133,9 +163,12 @@ export default function ContactPage() {
       {/* Header */}
       <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">Contactez-nous</h1>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">
+            Contactez-nous
+          </h1>
           <p className="text-xl text-blue-100 max-w-3xl mx-auto">
-            Une question sur l'événement ? Besoin d'informations ? Notre équipe est à votre disposition
+            Une question sur l'événement ? Besoin d'informations ? Notre équipe
+            est à votre disposition
           </p>
         </div>
       </div>
@@ -152,7 +185,8 @@ export default function ContactPage() {
                   Envoyez-nous un message
                 </CardTitle>
                 <CardDescription>
-                  Remplissez le formulaire ci-dessous et nous vous répondrons dans les plus brefs délais
+                  Remplissez le formulaire ci-dessous et nous vous répondrons
+                  dans les plus brefs délais
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -162,7 +196,8 @@ export default function ContactPage() {
                     <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-2">
                       <CheckCircle className="h-5 w-5 text-green-600" />
                       <p className="text-green-800 text-sm">
-                        Votre message a été envoyé avec succès ! Nous vous répondrons {getTempsReponse()}.
+                        Votre message a été envoyé avec succès ! Nous vous
+                        répondrons {getTempsReponse()}.
                       </p>
                     </div>
                   )}
@@ -171,7 +206,8 @@ export default function ContactPage() {
                     <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-2">
                       <AlertCircle className="h-5 w-5 text-red-600" />
                       <p className="text-red-800 text-sm">
-                        Une erreur s'est produite. Veuillez réessayer plus tard ou nous contacter par téléphone.
+                        Une erreur s'est produite. Veuillez réessayer plus tard
+                        ou nous contacter par téléphone.
                       </p>
                     </div>
                   )}
@@ -183,7 +219,9 @@ export default function ContactPage() {
                         id="nom"
                         type="text"
                         value={formData.nom}
-                        onChange={(e) => handleInputChange("nom", e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("nom", e.target.value)
+                        }
                         placeholder="Votre nom et prénom"
                         className={errors.nom ? "border-red-500" : ""}
                       />
@@ -198,7 +236,9 @@ export default function ContactPage() {
                         id="email"
                         type="email"
                         value={formData.email}
-                        onChange={(e) => handleInputChange("email", e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("email", e.target.value)
+                        }
                         placeholder="votre@email.com"
                         className={errors.email ? "border-red-500" : ""}
                       />
@@ -211,21 +251,38 @@ export default function ContactPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="typeDemande">Type de demande *</Label>
-                      <Select value={formData.typeDemande} onValueChange={(value) => handleInputChange("typeDemande", value)}>
-                        <SelectTrigger className={errors.typeDemande ? "border-red-500" : ""}>
+                      <Select
+                        value={formData.typeDemande}
+                        onValueChange={(value) =>
+                          handleInputChange("typeDemande", value)
+                        }
+                      >
+                        <SelectTrigger
+                          className={errors.typeDemande ? "border-red-500" : ""}
+                        >
                           <SelectValue placeholder="Sélectionnez..." />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="information">Demande d'information</SelectItem>
-                          <SelectItem value="inscription">Inscription exposant</SelectItem>
-                          <SelectItem value="partenariat">Partenariat</SelectItem>
+                          <SelectItem value="information">
+                            Demande d'information
+                          </SelectItem>
+                          <SelectItem value="inscription">
+                            Inscription exposant
+                          </SelectItem>
+                          <SelectItem value="partenariat">
+                            Partenariat
+                          </SelectItem>
                           <SelectItem value="presse">Presse/Médias</SelectItem>
-                          <SelectItem value="technique">Problème technique</SelectItem>
+                          <SelectItem value="technique">
+                            Problème technique
+                          </SelectItem>
                           <SelectItem value="autre">Autre</SelectItem>
                         </SelectContent>
                       </Select>
                       {errors.typeDemande && (
-                        <p className="text-red-500 text-sm">{errors.typeDemande}</p>
+                        <p className="text-red-500 text-sm">
+                          {errors.typeDemande}
+                        </p>
                       )}
                     </div>
 
@@ -235,7 +292,9 @@ export default function ContactPage() {
                         id="sujet"
                         type="text"
                         value={formData.sujet}
-                        onChange={(e) => handleInputChange("sujet", e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("sujet", e.target.value)
+                        }
                         placeholder="Sujet de votre message"
                         className={errors.sujet ? "border-red-500" : ""}
                       />
@@ -250,7 +309,9 @@ export default function ContactPage() {
                     <Textarea
                       id="message"
                       value={formData.message}
-                      onChange={(e) => handleInputChange("message", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("message", e.target.value)
+                      }
                       placeholder="Décrivez votre demande en détail..."
                       rows={6}
                       className={errors.message ? "border-red-500" : ""}
@@ -260,9 +321,9 @@ export default function ContactPage() {
                     )}
                   </div>
 
-                  <Button 
-                    type="submit" 
-                    className="w-full" 
+                  <Button
+                    type="submit"
+                    className="w-full"
                     disabled={isSubmitting}
                   >
                     {isSubmitting ? (
@@ -297,7 +358,9 @@ export default function ContactPage() {
                   <div>
                     <div className="font-medium">Email</div>
                     <div className="text-gray-600">info@atlantisevents.ma</div>
-                    <div className="text-gray-600 text-sm">contact@atlantisevents.ma</div>
+                    <div className="text-gray-600 text-sm">
+                      contact@atlantisevents.ma
+                    </div>
                   </div>
                 </div>
 
@@ -306,7 +369,9 @@ export default function ContactPage() {
                   <div>
                     <div className="font-medium">Téléphone</div>
                     <div className="text-gray-600">+212 539-34-56-78</div>
-                    <div className="text-gray-600 text-sm">+212 661-23-45-67</div>
+                    <div className="text-gray-600 text-sm">
+                      +212 661-23-45-67
+                    </div>
                   </div>
                 </div>
 
@@ -315,7 +380,8 @@ export default function ContactPage() {
                   <div>
                     <div className="font-medium">Adresse</div>
                     <div className="text-gray-600">
-                      123, Avenue Mohammed VI<br />
+                      123, Avenue Mohammed VI
+                      <br />
                       Tanger 90000, Maroc
                     </div>
                   </div>
@@ -326,7 +392,8 @@ export default function ContactPage() {
                   <div>
                     <div className="font-medium">Horaires d'ouverture</div>
                     <div className="text-gray-600">
-                      Lundi - Vendredi: 09:00 - 18:00<br />
+                      Lundi - Vendredi: 09:00 - 18:00
+                      <br />
                       Samedi: 09:00 - 13:00
                     </div>
                     <div className="text-sm text-green-600 mt-1">
@@ -348,8 +415,8 @@ export default function ContactPage() {
                     Pour les exposants
                   </h4>
                   <p className="text-gray-600 text-sm">
-                    Vous souhaitez participer à l'événement en tant qu'exposant ? 
-                    Contactez-nous pour connaître les modalités et tarifs.
+                    Vous souhaitez participer à l'événement en tant qu'exposant
+                    ? Contactez-nous pour connaître les modalités et tarifs.
                   </p>
                 </div>
 
@@ -359,8 +426,9 @@ export default function ContactPage() {
                     Pour les lycées
                   </h4>
                   <p className="text-gray-600 text-sm">
-                    Votre établissement souhaite accueillir une session de portes ouvertes ? 
-                    Nous serions ravis de collaborer avec vous.
+                    Votre établissement souhaite accueillir une session de
+                    portes ouvertes ? Nous serions ravis de collaborer avec
+                    vous.
                   </p>
                 </div>
 
@@ -370,7 +438,8 @@ export default function ContactPage() {
                     Temps de réponse
                   </h4>
                   <p className="text-gray-600 text-sm">
-                    Nous nous engageons à répondre à toutes vos demandes dans un délai maximum de 48 heures ouvrées.
+                    Nous nous engageons à répondre à toutes vos demandes dans un
+                    délai maximum de 48 heures ouvrées.
                   </p>
                 </div>
               </CardContent>
@@ -382,30 +451,42 @@ export default function ContactPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <h4 className="font-medium text-sm mb-1">L'inscription est-elle gratuite ?</h4>
+                  <h4 className="font-medium text-sm mb-1">
+                    L'inscription est-elle gratuite ?
+                  </h4>
                   <p className="text-gray-600 text-xs">
-                    Oui, l'inscription aux portes ouvertes est totalement gratuite pour les visiteurs.
+                    Oui, l'inscription aux portes ouvertes est totalement
+                    gratuite pour les visiteurs.
                   </p>
                 </div>
 
                 <div>
-                  <h4 className="font-medium text-sm mb-1">Comment devenir exposant ?</h4>
+                  <h4 className="font-medium text-sm mb-1">
+                    Comment devenir exposant ?
+                  </h4>
                   <p className="text-gray-600 text-xs">
-                    Contactez-nous via le formulaire en sélectionnant "Inscription exposant" ou par téléphone.
+                    Contactez-nous via le formulaire en sélectionnant
+                    "Inscription exposant" ou par téléphone.
                   </p>
                 </div>
 
                 <div>
-                  <h4 className="font-medium text-sm mb-1">Les lycées sont-ils accessibles ?</h4>
+                  <h4 className="font-medium text-sm mb-1">
+                    Les lycées sont-ils accessibles ?
+                  </h4>
                   <p className="text-gray-600 text-xs">
-                    Tous les lycées participants sont accessibles aux personnes à mobilité réduite.
+                    Tous les lycées participants sont accessibles aux personnes
+                    à mobilité réduite.
                   </p>
                 </div>
 
                 <div>
-                  <h4 className="font-medium text-sm mb-1">Puis-je visiter plusieurs lycées ?</h4>
+                  <h4 className="font-medium text-sm mb-1">
+                    Puis-je visiter plusieurs lycées ?
+                  </h4>
                   <p className="text-gray-600 text-xs">
-                    Oui, vous pouvez vous inscrire à plusieurs événements dans différents lycées.
+                    Oui, vous pouvez vous inscrire à plusieurs événements dans
+                    différents lycées.
                   </p>
                 </div>
               </CardContent>
@@ -417,7 +498,8 @@ export default function ContactPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-gray-600 text-sm mb-4">
-                  Restez informé des dernières actualités et événements en nous suivant sur les réseaux sociaux.
+                  Restez informé des dernières actualités et événements en nous
+                  suivant sur les réseaux sociaux.
                 </p>
                 <div className="flex flex-wrap gap-2">
                   <Button variant="outline" size="sm">
