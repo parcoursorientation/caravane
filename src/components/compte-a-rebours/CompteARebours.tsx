@@ -1,7 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Clock, Calendar, Timer, MapPin } from "lucide-react";
 
@@ -23,14 +29,18 @@ interface CompteAReboursProps {
   className?: string;
 }
 
-export default function CompteARebours({ className = "" }: CompteAReboursProps) {
-  const [compteARebours, setCompteARebours] = useState<CompteARebours | null>(null);
+export default function CompteARebours({
+  className = "",
+}: CompteAReboursProps) {
+  const [compteARebours, setCompteARebours] = useState<CompteARebours | null>(
+    null
+  );
   const [loading, setLoading] = useState(true);
   const [timeLeft, setTimeLeft] = useState({
     days: 0,
     hours: 0,
     minutes: 0,
-    seconds: 0
+    seconds: 0,
   });
 
   useEffect(() => {
@@ -47,8 +57,12 @@ export default function CompteARebours({ className = "" }: CompteAReboursProps) 
 
       if (difference > 0) {
         const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+        const hours = Math.floor(
+          (difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+        );
+        const minutes = Math.floor(
+          (difference % (1000 * 60 * 60)) / (1000 * 60)
+        );
         const seconds = Math.floor((difference % (1000 * 60)) / 1000);
 
         setTimeLeft({ days, hours, minutes, seconds });
@@ -60,7 +74,7 @@ export default function CompteARebours({ className = "" }: CompteAReboursProps) 
 
     // Calculer immédiatement
     calculateTimeLeft();
-    
+
     // Mettre à jour chaque seconde
     const timer = setInterval(calculateTimeLeft, 1000);
 
@@ -69,25 +83,28 @@ export default function CompteARebours({ className = "" }: CompteAReboursProps) 
 
   const fetchCompteARebours = async () => {
     try {
-      const response = await fetch('/api/compte-a-rebours');
+      const response = await fetch("/api/compte-a-rebours");
       if (response.ok) {
         const data = await response.json();
         setCompteARebours(data.data);
       }
     } catch (error) {
-      console.error('Erreur lors de la récupération du compte à rebours:', error);
+      console.error(
+        "Erreur lors de la récupération du compte à rebours:",
+        error
+      );
     } finally {
       setLoading(false);
     }
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('fr-FR', {
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    return new Date(dateString).toLocaleDateString("fr-FR", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
@@ -122,32 +139,32 @@ export default function CompteARebours({ className = "" }: CompteAReboursProps) 
   }
 
   return (
-    <Card className={`w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white ${className}`}>
+    <Card className={`w-full bg-blue-600  text-white ${className}`}>
       <CardHeader className="text-center">
-        <CardTitle className="flex items-center justify-center gap-2 text-xl">
+        <CardTitle className="flex items-center justify-center gap-3 text-3xl">
           <Timer className="h-6 w-6" />
           {compteARebours.titre}
         </CardTitle>
         {compteARebours.description && (
-          <CardDescription className="text-blue-100">
+          <CardDescription className="text-blue-100 text-base">
             {compteARebours.description}
           </CardDescription>
         )}
       </CardHeader>
       <CardContent>
         <div className="text-center mb-4">
-          <div className="flex items-center justify-center gap-2 text-sm text-blue-100 mb-2">
+          <div className="flex items-center justify-center gap-2 text-base text-blue-100 mb-2">
             <Calendar className="h-4 w-4" />
             <span>Événement le {formatDate(compteARebours.dateCible)}</span>
           </div>
           {compteARebours.dateFin && (
-            <div className="flex items-center justify-center gap-2 text-sm text-blue-100 mb-2">
+            <div className="flex items-center justify-center gap-2 text-base text-blue-100 mb-2">
               <Calendar className="h-4 w-4" />
               <span>Jusqu'au {formatDate(compteARebours.dateFin)}</span>
             </div>
           )}
           {(compteARebours.lieu || compteARebours.ville) && (
-            <div className="flex items-center justify-center gap-2 text-sm text-blue-100 mb-2">
+            <div className="flex items-center justify-center gap-2 text-base text-blue-100 mb-2">
               <MapPin className="h-4 w-4" />
               <span>
                 {compteARebours.lieu}
@@ -191,7 +208,9 @@ export default function CompteARebours({ className = "" }: CompteAReboursProps) 
         {isExpired() && (
           <div className="text-center py-4">
             <Clock className="h-12 w-12 mx-auto mb-2 text-blue-200" />
-            <p className="text-blue-100">Cet événement est maintenant terminé.</p>
+            <p className="text-blue-100">
+              Cet événement est maintenant terminé.
+            </p>
           </div>
         )}
       </CardContent>
