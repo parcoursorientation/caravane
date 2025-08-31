@@ -145,7 +145,27 @@ export default function LyceesPage() {
       if (!map.has(key)) {
         map.set(key, { idRepresentative: evt.id, nom: key, items: [] });
       }
-      const foundLycee = lycees.find((l) => l.id === evt.lycee.id) || null;
+      // Try to enrich with local lycée by ID, then fallback by name/city when ID is missing
+      let foundLycee = lycees.find((l) => l.id === evt.lycee.id) || null;
+      if (!foundLycee) {
+        const targetName = (evt.lycee.nom || "").trim().toLowerCase();
+        const targetCity = normalizeCityKey(
+          evt.ville ?? evt.lycee.adresse ?? ""
+        );
+        // 1) Strict match by name + city
+        foundLycee =
+          lycees.find(
+            (l) =>
+              l.nom.trim().toLowerCase() === targetName &&
+              normalizeCityKey(l.adresse) === targetCity
+          ) || null;
+        // 2) Fallback: match by name only
+        if (!foundLycee) {
+          foundLycee =
+            lycees.find((l) => l.nom.trim().toLowerCase() === targetName) ||
+            null;
+        }
+      }
       map.get(key)!.items.push({ lycee: foundLycee, evt });
     }
 
@@ -230,7 +250,23 @@ export default function LyceesPage() {
             })()
           : null;
 
-      // Déduire type et année académique depuis le premier item du groupe
+      // Déduire type de lycée dominant dans le groupe (si cohérent)
+      const typeCounts = itemsSorted.reduce(
+        (acc, it) => {
+          const t = it.lycee?.type || null;
+          if (t === "PUBLIC" || t === "PRIVE") acc[t]++;
+          return acc;
+        },
+        { PUBLIC: 0, PRIVE: 0 } as { PUBLIC: number; PRIVE: number }
+      );
+      const groupLyceeType =
+        typeCounts.PUBLIC === 0 && typeCounts.PRIVE === 0
+          ? null
+          : typeCounts.PUBLIC >= typeCounts.PRIVE
+          ? "PUBLIC"
+          : "PRIVE";
+
+      // Déduire type et année académique depuis le premier item du groupe (métadonnées d'événement)
       const firstItem = itemsSorted[0]?.evt;
       const groupType = firstItem?.type ?? null;
       const groupAcademic = firstItem?.academicYear ?? null;
@@ -246,6 +282,7 @@ export default function LyceesPage() {
         type: groupType,
         academicYear: groupAcademic,
         hostCount: itemsSorted.length,
+        groupLyceeType,
       };
     });
     arr.sort(
@@ -905,6 +942,19 @@ export default function LyceesPage() {
                             <MapPin className="h-3 w-3" /> {group.villesDisplay}
                           </span>
                         ) : null}
+                        {group.groupLyceeType && (
+                          <span
+                            className={`inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded ${
+                              group.groupLyceeType === "PUBLIC"
+                                ? "text-blue-700 bg-blue-50"
+                                : "text-purple-700 bg-purple-50"
+                            }`}
+                          >
+                            {group.groupLyceeType === "PUBLIC"
+                              ? "Public"
+                              : "Privé"}
+                          </span>
+                        )}
                       </div>
                       <div className="text-xs text-gray-600">
                         Première date: {formatDate(group.firstDate)}
@@ -941,18 +991,16 @@ export default function LyceesPage() {
                                   </span>
                                 </CardDescription>
                               </div>
-                              {lycee && (
-                                <Badge
-                                  variant={
-                                    lycee.type === "PUBLIC"
-                                      ? "default"
-                                      : "secondary"
-                                  }
-                                  className="text-xs"
-                                >
-                                  {lycee.type === "PUBLIC" ? "Public" : "Privé"}
-                                </Badge>
-                              )}
+                              <Badge
+                                variant="outline"
+                                className={`text-xs font-medium ${
+                                  lycee?.type === "PUBLIC"
+                                    ? "border-blue-500 text-blue-700 bg-blue-50"
+                                    : "border-purple-500 text-purple-700 bg-purple-50"
+                                }`}
+                              >
+                                {lycee?.type === "PUBLIC" ? "Public" : "Privé"}
+                              </Badge>
                             </div>
                           </CardHeader>
                           <CardContent>
@@ -975,15 +1023,7 @@ export default function LyceesPage() {
                                     : ""}
                                 </span>
                               </div>
-                              {lycee && (
-                                <Button
-                                  size="sm"
-                                  className="w-full"
-                                  onClick={() => setSelectedLycee(lycee)}
-                                >
-                                  Voir la fiche détaillée
-                                </Button>
-                              )}
+                              {/* Type du lycée déjà affiché en badge dans l’en-tête */}
                             </div>
                           </CardContent>
                         </Card>
@@ -996,7 +1036,7 @@ export default function LyceesPage() {
           )}
         </div>
 
-        {/* Grille des lycées (vue originale) */}
+        {/* Grille des lycées (vue originale) 
         {filteredLycees.length === 0 ? (
           <Card>
             <CardContent className="text-center py-12 animate-fadeIn">
@@ -1161,7 +1201,7 @@ export default function LyceesPage() {
                       </DialogContent>
                     </Dialog>
 
-                    {/* Dialogue pour le programme complet */}
+                    {/* Dialogue pour le programme complet 
                     <Dialog
                       open={showProgrammeComplet}
                       onOpenChange={setShowProgrammeComplet}
@@ -1186,7 +1226,7 @@ export default function LyceesPage() {
               </Card>
             ))}
           </div>
-        )}
+        )} */}
       </div>
     </Layout>
   );
