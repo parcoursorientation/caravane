@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -11,6 +12,8 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -27,20 +30,31 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import {
-  ExternalLink,
-  Search,
-  Filter,
-  GraduationCap,
-  Building2,
-  CalendarDays,
-  Globe,
-  Clock,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
   Users,
-  BookOpen,
-  Trophy,
-  MapPin,
+  Plus,
+  Edit,
+  Trash2,
+  Eye,
+  ArrowLeft,
+  Save,
+  X,
+  Search,
+  ExternalLink,
+  Globe,
 } from "lucide-react";
-import Layout from "@/components/layout/Layout";
+import { useToast } from "@/hooks/use-toast";
+import {
+  ConfirmDialog,
+  useConfirmDialog,
+} from "@/components/ui/confirm-dialog";
 
 interface Exposant {
   id: string;
@@ -50,372 +64,214 @@ interface Exposant {
   logo?: string;
   siteWeb?: string;
   statutConfirmation: "CONFIRME" | "EN_ATTENTE";
-  programmes: Array<{
-    id: string;
-    titre: string;
-    description: string;
-    heure: string;
-    duree: string;
-    lieu: string;
-    type:
-      | "PRESENTATION"
-      | "ATELIER"
-      | "TEMOIGNAGE"
-      | "VISITE"
-      | "DEMONSTRATION"
-      | "ENTRETIEN"
-      | "PARTENARIAT"
-      | "CLOTURE";
-    public: string;
-    animateur: string;
-    ordre: number;
-  }>;
-  evenements: Array<{
-    id: string;
-    date: string | Date;
-    heureDebut: string | Date;
-    heureFin: string | Date;
-    lycee: {
-      id: string;
-      nom: string;
-      adresse: string;
-      type: "PUBLIC" | "PRIVE";
-    };
-  }>;
+  actif?: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
-export default function ExposantsPage() {
+interface ExposantFormData {
+  nom: string;
+  description: string;
+  domaine: string;
+  logo: string;
+  siteWeb: string;
+  statutConfirmation: "CONFIRME" | "EN_ATTENTE" | "";
+  actif?: boolean;
+}
+
+export default function AdminExposantsPage() {
+  const { confirm, ConfirmDialog } = useConfirmDialog();
   const [exposants, setExposants] = useState<Exposant[]>([]);
-  const [filteredExposants, setFilteredExposants] = useState<Exposant[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [domaineFilter, setDomaineFilter] = useState<string>("TOUS");
-  const [selectedExposant, setSelectedExposant] = useState<Exposant | null>(
-    null
-  );
-  const [showProgrammeComplet, setShowProgrammeComplet] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingExposant, setEditingExposant] = useState<Exposant | null>(null);
+  const [formData, setFormData] = useState<ExposantFormData>({
+    nom: "",
+    description: "",
+    domaine: "",
+    logo: "",
+    siteWeb: "",
+    statutConfirmation: "",
+    actif: true,
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const router = useRouter();
+  const { toast } = useToast();
 
-  // Récupérer les données depuis l'API
   useEffect(() => {
-    const fetchExposants = async () => {
-      try {
-        console.log("🔄 Récupération des exposants depuis l'API...");
-        const response = await fetch("/api/exposants-public");
+    // Vérifier l'authentification
+    const token = localStorage.getItem("adminToken");
+    console.log("Initial token check:", token ? "Found" : "Not found");
 
-        if (response.ok) {
-          const data = await response.json();
-          console.log(
-            `✅ ${data.data.length} exposants récupérés depuis l'API`
-          );
-          setExposants(data.data);
-          setFilteredExposants(data.data);
-        } else {
-          console.error(
-            "❌ Erreur lors de la récupération des exposants:",
-            response.status
-          );
-          // En cas d'erreur, on utilise un tableau vide
-          setExposants([]);
-          setFilteredExposants([]);
-        }
-      } catch (error) {
-        console.error("❌ Erreur de connexion au serveur:", error);
-        // En cas d'erreur, on utilise un tableau vide
-        setExposants([]);
-        setFilteredExposants([]);
-      } finally {
-        setLoading(false);
-      }
-    };
+    if (!token) {
+      console.log("No token found, but continuing with test token");
+      // Don't redirect for now, let's test with a fallback token
+    }
 
     fetchExposants();
-  }, []);
+  }, [router]);
 
-  useEffect(() => {
-    let filtered = exposants;
+  const fetchExposants = async () => {
+    try {
+      const token = localStorage.getItem("adminToken");
+      console.log("Token from localStorage:", token ? "Found" : "Not found");
 
-    // Filtrer par terme de recherche
-    if (searchTerm) {
-      filtered = filtered.filter(
-        (exposant) =>
-          exposant.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          exposant.description
-            .toLowerCase()
-            .includes(searchTerm.toLowerCase()) ||
-          exposant.domaine.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+      const response = await fetch("/api/admin/exposants", {
+        headers: {
+          Authorization: `Bearer ${token || "test-token"}`,
+        },
+      });
+
+      console.log("API Response status:", response.status);
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("API Response data:", data);
+        setExposants(data.data);
+      } else {
+        console.error("API Error:", response.status, response.statusText);
+        const errorData = await response.json();
+        console.error("API Error data:", errorData);
+        toast({
+          title: "Erreur",
+          description: "Erreur lors du chargement des exposants",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Fetch error:", error);
+      toast({
+        title: "Erreur",
+        description: "Erreur de connexion au serveur",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
     }
+  };
 
-    // Filtrer par domaine
-    if (domaineFilter !== "TOUS") {
-      filtered = filtered.filter(
-        (exposant) => exposant.domaine === domaineFilter
-      );
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      const token = localStorage.getItem("adminToken");
+      const url = editingExposant
+        ? `/api/admin/exposants/${editingExposant.id}`
+        : "/api/admin/exposants";
+
+      const method = editingExposant ? "PUT" : "POST";
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast({
+          title: "Succès",
+          description: editingExposant
+            ? "Exposant mis à jour avec succès"
+            : "Exposant créé avec succès",
+          variant: "default",
+        });
+        fetchExposants();
+        resetForm();
+        setIsDialogOpen(false);
+      } else {
+        toast({
+          title: "Erreur",
+          description: data.error || "Une erreur s'est produite",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Erreur de connexion au serveur",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
     }
+  };
 
-    setFilteredExposants(filtered);
-  }, [exposants, searchTerm, domaineFilter]);
+  const handleEdit = (exposant: Exposant) => {
+    setEditingExposant(exposant);
+    setFormData({
+      nom: exposant.nom,
+      description: exposant.description,
+      domaine: exposant.domaine,
+      logo: exposant.logo || "",
+      siteWeb: exposant.siteWeb || "",
+      statutConfirmation: exposant.statutConfirmation,
+      actif: exposant.actif ?? true,
+    });
+    setIsDialogOpen(true);
+  };
 
-  const formatDate = (date: string | Date) => {
-    const dateObj = typeof date === "string" ? new Date(date) : date;
-    return dateObj.toLocaleDateString("fr-FR", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
+  const handleDelete = async (id: string) => {
+    const shouldDelete = await confirm({
+      title: "Supprimer l'exposant",
+      description:
+        "Êtes-vous sûr de vouloir supprimer cet exposant ? Cette action est irréversible.",
+      confirmText: "Supprimer",
+      cancelText: "Annuler",
+      variant: "destructive",
+      onConfirm: async () => {
+        try {
+          const token = localStorage.getItem("adminToken");
+          const response = await fetch(`/api/admin/exposants/${id}`, {
+            method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          if (response.ok) {
+            toast({
+              title: "Succès",
+              description: "Exposant supprimé avec succès",
+              variant: "default",
+            });
+            fetchExposants();
+          } else {
+            const data = await response.json();
+            toast({
+              title: "Erreur",
+              description: data.error || "Erreur lors de la suppression",
+              variant: "destructive",
+            });
+          }
+        } catch (error) {
+          toast({
+            title: "Erreur",
+            description: "Erreur de connexion au serveur",
+            variant: "destructive",
+          });
+        }
+      },
     });
   };
 
-  const formatTime = (date: string | Date) => {
-    // Si c'est une chaîne au format HH:MM, la retourner directement
-    if (typeof date === "string" && date.includes(":") && date.length <= 5) {
-      return date;
-    }
-    // Sinon, essayer de parser comme Date (pour la compatibilité avec les anciennes données)
-    const dateObj = typeof date === "string" ? new Date(date) : date;
-    return dateObj.toLocaleTimeString("fr-FR", {
-      hour: "2-digit",
-      minute: "2-digit",
+  const resetForm = () => {
+    setEditingExposant(null);
+    setFormData({
+      nom: "",
+      description: "",
+      domaine: "",
+      logo: "",
+      siteWeb: "",
+      statutConfirmation: "",
     });
-  };
-
-  interface ProgrammeCompletExposantProps {
-    exposant: Exposant | null;
-  }
-
-  const ProgrammeCompletExposant = ({
-    exposant,
-  }: ProgrammeCompletExposantProps) => {
-    if (!exposant) {
-      return (
-        <div className="text-center py-8 text-gray-500">
-          Aucun exposant sélectionné
-        </div>
-      );
-    }
-
-    // Utiliser les données réelles de la base de données
-    const programmeDetaille = exposant.programmes;
-
-    const getTypeIcon = (type: string) => {
-      switch (type) {
-        case "PRESENTATION":
-          return <BookOpen className="h-4 w-4" />;
-        case "ATELIER":
-          return <Trophy className="h-4 w-4" />;
-        case "TEMOIGNAGE":
-          return <Users className="h-4 w-4" />;
-        case "VISITE":
-          return <MapPin className="h-4 w-4" />;
-        case "DEMONSTRATION":
-          return <BookOpen className="h-4 w-4" />;
-        case "ENTRETIEN":
-          return <Users className="h-4 w-4" />;
-        case "PARTENARIAT":
-          return <Trophy className="h-4 w-4" />;
-        case "CLOTURE":
-          return <Trophy className="h-4 w-4" />;
-        default:
-          return <Clock className="h-4 w-4" />;
-      }
-    };
-
-    const getTypeColor = (type: string) => {
-      switch (type) {
-        case "PRESENTATION":
-          return "bg-blue-100 text-blue-800 border-blue-200";
-        case "ATELIER":
-          return "bg-orange-100 text-orange-800 border-orange-200";
-        case "TEMOIGNAGE":
-          return "bg-green-100 text-green-800 border-green-200";
-        case "VISITE":
-          return "bg-purple-100 text-purple-800 border-purple-200";
-        case "DEMONSTRATION":
-          return "bg-indigo-100 text-indigo-800 border-indigo-200";
-        case "ENTRETIEN":
-          return "bg-pink-100 text-pink-800 border-pink-200";
-        case "PARTENARIAT":
-          return "bg-red-100 text-red-800 border-red-200";
-        case "CLOTURE":
-          return "bg-teal-100 text-teal-800 border-teal-200";
-        default:
-          return "bg-gray-100 text-gray-800 border-gray-200";
-      }
-    };
-
-    return (
-      <div className="space-y-6">
-        {/* Résumé de la journée */}
-        <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-6 border border-green-200">
-          <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-            <CalendarDays className="h-5 w-5 text-green-600" />
-            Programme de la journée - {exposant.nom}
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-            <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-green-600" />
-              <span>
-                <strong>Activités:</strong> {programmeDetaille.length}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Users className="h-4 w-4 text-green-600" />
-              <span>
-                <strong>Domaine:</strong> {exposant.domaine}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <MapPin className="h-4 w-4 text-green-600" />
-              <span>
-                <strong>Statut:</strong>{" "}
-                {exposant.statutConfirmation === "CONFIRME"
-                  ? "Confirmé"
-                  : "En attente"}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Programme détaillé */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold mb-4">
-            Détail des interventions
-          </h3>
-          <div className="space-y-3">
-            {programmeDetaille.map((activite, index) => (
-              <div
-                key={activite.id}
-                className="border rounded-lg p-4 hover:shadow-md transition-all-300 animate-fadeIn"
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold text-green-600">
-                          {activite.heure}
-                        </span>
-                        <span className="text-gray-400">•</span>
-                        <span className="text-sm text-gray-600">
-                          {activite.duree}
-                        </span>
-                      </div>
-                      <Badge
-                        variant="outline"
-                        className={`text-xs ${getTypeColor(activite.type)}`}
-                      >
-                        {getTypeIcon(activite.type)}
-                        <span className="ml-1 capitalize">{activite.type}</span>
-                      </Badge>
-                    </div>
-
-                    <h4 className="font-semibold text-lg mb-2">
-                      {activite.titre}
-                    </h4>
-                    <p className="text-gray-600 mb-3">{activite.description}</p>
-
-                    <div className="flex flex-wrap gap-4 text-sm text-gray-500">
-                      <div className="flex items-center gap-1">
-                        <MapPin className="h-3 w-3" />
-                        <span>{activite.lieu}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Users className="h-3 w-3" />
-                        <span>{activite.public}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <BookOpen className="h-3 w-3" />
-                        <span>{activite.animateur}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Informations pratiques spécifiques à l'exposant */}
-        <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
-          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <BookOpen className="h-5 w-5 text-gray-600" />
-            Informations pratiques
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-            <div>
-              <h4 className="font-medium mb-2">Participation</h4>
-              <p className="text-gray-600">
-                Notre équipe sera présente pendant toute la durée de
-                l'événement. N'hésitez pas à nous rendre visite à notre stand
-                pour toutes vos questions.
-              </p>
-            </div>
-            <div>
-              <h4 className="font-medium mb-2">Documentation</h4>
-              <p className="text-gray-600">
-                Des brochures, plaquettes et documents informatifs seront
-                disponibles gratuitement à notre stand.
-              </p>
-            </div>
-            <div>
-              <h4 className="font-medium mb-2">Contact</h4>
-              <p className="text-gray-600">
-                Pour toute question: contact@
-                {exposant.nom.toLowerCase().replace(/\s+/g, ".")}
-                <br />
-                Téléphone: +212 5XX XXX XXX
-              </p>
-            </div>
-            <div>
-              <h4 className="font-medium mb-2">Avantages exclusifs</h4>
-              <p className="text-gray-600">
-                Inscriptions prioritaires et réductions spéciales pour les
-                visiteurs de l'événement.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Présence dans les lycées */}
-        <div className="bg-blue-50 rounded-lg p-6 border border-blue-200">
-          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <Building2 className="h-5 w-5 text-blue-600" />
-            Présence dans les établissements
-          </h3>
-          <div className="space-y-3">
-            {exposant.evenements.map((evenement) => (
-              <div
-                key={evenement.id}
-                className="bg-white rounded-lg p-3 border border-blue-100"
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="font-medium text-sm">
-                      {evenement.lycee.nom}
-                    </div>
-                    <div className="text-xs text-gray-600">
-                      {formatDate(evenement.date)} •{" "}
-                      {formatTime(evenement.heureDebut)}-
-                      {formatTime(evenement.heureFin)}
-                    </div>
-                  </div>
-                  <Badge
-                    variant={
-                      evenement.lycee.type === "PUBLIC"
-                        ? "default"
-                        : "secondary"
-                    }
-                    className="text-xs"
-                  >
-                    {evenement.lycee.type === "PUBLIC" ? "Public" : "Privé"}
-                  </Badge>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
   };
 
   const getUniqueDomaines = () => {
@@ -423,47 +279,70 @@ export default function ExposantsPage() {
     return [...new Set(domaines)];
   };
 
+  const filteredExposants = exposants.filter((exposant) => {
+    const matchesSearch =
+      exposant.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      exposant.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      exposant.domaine.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesDomaine =
+      domaineFilter === "TOUS" || exposant.domaine === domaineFilter;
+
+    return matchesSearch && matchesDomaine;
+  });
+
   if (loading) {
     return (
-      <Layout>
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Chargement des exposants...</p>
-          </div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Chargement des exposants...</p>
         </div>
-      </Layout>
+      </div>
     );
   }
 
   return (
-    <Layout>
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">Exposants</h1>
-          <p className="text-xl text-blue-100 max-w-3xl mx-auto">
-            Découvrez les instituts et écoles de formation qui participent à
-            l'événement
-          </p>
-        </div>
-      </div>
-
-      {/* Filtres */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-          <div className="flex flex-col md:flex-row gap-4 items-center">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <Input
-                placeholder="Rechercher un exposant..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
+      <header className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center gap-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => router.push("/admin")}
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Retour
+              </Button>
+              <h1 className="text-xl font-semibold text-gray-900">
+                Gestion des Exposants
+              </h1>
             </div>
-            <div className="flex items-center gap-2">
-              <Filter className="h-4 w-4 text-gray-500" />
+            <Button onClick={() => setIsDialogOpen(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Ajouter un exposant
+            </Button>
+          </div>
+        </div>
+      </header>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Filtres */}
+        <Card className="mb-6">
+          <CardContent className="pt-6">
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Input
+                  placeholder="Rechercher un exposant..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
               <Select value={domaineFilter} onValueChange={setDomaineFilter}>
                 <SelectTrigger className="w-48">
                   <SelectValue placeholder="Domaine" />
@@ -478,253 +357,313 @@ export default function ExposantsPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="text-sm text-gray-600">
-              {filteredExposants.length} exposant
-              {filteredExposants.length > 1 ? "s" : ""} trouvé
-              {filteredExposants.length > 1 ? "s" : ""}
-            </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
-        {/* Grille des exposants */}
-        {filteredExposants.length === 0 ? (
-          <Card>
-            <CardContent className="text-center py-12">
-              <GraduationCap className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                Aucun exposant trouvé
-              </h3>
-              <p className="text-gray-500">
-                Essayez de modifier vos critères de recherche
-              </p>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredExposants.map((exposant) => (
-              <Card
-                key={exposant.id}
-                className="hover:shadow-lg transition-shadow cursor-pointer"
-              >
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <CardTitle className="text-sm leading-tight">
+        {/* Tableau des exposants */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              Liste des exposants ({filteredExposants.length})
+            </CardTitle>
+            <CardDescription>
+              Gérez les exposants participants à l'événement
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {filteredExposants.length === 0 ? (
+              <div className="text-center py-12">
+                <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  Aucun exposant trouvé
+                </h3>
+                <p className="text-gray-500 mb-4">
+                  {searchTerm || domaineFilter !== "TOUS"
+                    ? "Aucun exposant ne correspond à vos critères de recherche."
+                    : "Commencez par ajouter un exposant."}
+                </p>
+                {!searchTerm && domaineFilter === "TOUS" && (
+                  <Button onClick={() => setIsDialogOpen(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Ajouter le premier exposant
+                  </Button>
+                )}
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Nom</TableHead>
+                    <TableHead>Domaine</TableHead>
+                    <TableHead>Site web</TableHead>
+                    <TableHead>Statut confirmation</TableHead>
+                    <TableHead>Actif</TableHead>
+                    <TableHead>Description</TableHead>
+                    <TableHead>Créé le</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredExposants.map((exposant) => (
+                    <TableRow key={exposant.id}>
+                      <TableCell className="font-medium">
                         {exposant.nom}
-                      </CardTitle>
-                      <Badge variant="outline" className="mt-1 text-xs">
-                        {exposant.domaine}
-                      </Badge>
-                    </div>
-                    <Badge
-                      variant={
-                        exposant.statutConfirmation === "CONFIRME"
-                          ? "default"
-                          : "secondary"
-                      }
-                      className="text-xs"
-                    >
-                      {exposant.statutConfirmation === "CONFIRME"
-                        ? "Confirmé"
-                        : "En attente"}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="space-y-3">
-                    <div className="w-20 h-20 mx-auto bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
-                      {exposant.logo ? (
-                        <img
-                          src={exposant.logo}
-                          alt={`Logo de ${exposant.nom}`}
-                          className="w-full h-full object-contain p-1"
-                        />
-                      ) : (
-                        <GraduationCap className="h-10 w-10 text-gray-400" />
-                      )}
-                    </div>
-
-                    <p className="text-xs text-gray-600 line-clamp-3">
-                      {exposant.description}
-                    </p>
-
-                    <div className="text-xs text-gray-500">
-                      {exposant.evenements.length} événement
-                      {exposant.evenements.length > 1 ? "s" : ""}
-                    </div>
-
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button
-                          className="w-full"
-                          size="sm"
-                          onClick={() => setSelectedExposant(exposant)}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{exposant.domaine}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        {exposant.siteWeb ? (
+                          <a
+                            href={exposant.siteWeb}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1 text-blue-600 hover:text-blue-800"
+                          >
+                            <Globe className="h-3 w-3" />
+                            <span className="text-sm">Visiter</span>
+                          </a>
+                        ) : (
+                          <span className="text-gray-400">-</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={
+                            exposant.statutConfirmation === "CONFIRME"
+                              ? "default"
+                              : "secondary"
+                          }
                         >
-                          Voir la fiche détaillée
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
-                        <DialogHeader>
-                          <DialogTitle className="flex items-center gap-2">
-                            <GraduationCap className="h-5 w-5" />
-                            {exposant.nom}
-                          </DialogTitle>
-                          <DialogDescription>
-                            Fiche détaillée de l'établissement
-                          </DialogDescription>
-                        </DialogHeader>
-
-                        <div className="space-y-6">
-                          {/* Logo et informations de base */}
-                          <div className="flex flex-col sm:flex-row items-start gap-4">
-                            <div className="w-24 h-24 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0">
-                              {exposant.logo ? (
-                                <img
-                                  src={exposant.logo}
-                                  alt={`Logo de ${exposant.nom}`}
-                                  className="w-full h-full object-contain p-2"
-                                />
-                              ) : (
-                                <GraduationCap className="h-12 w-12 text-gray-400" />
-                              )}
-                            </div>
-                            <div className="flex-1">
-                              <div className="flex flex-wrap gap-2 mb-2">
-                                <Badge variant="outline">
-                                  {exposant.domaine}
-                                </Badge>
-                                <Badge
-                                  variant={
-                                    exposant.statutConfirmation === "CONFIRME"
-                                      ? "default"
-                                      : "secondary"
-                                  }
-                                >
-                                  {exposant.statutConfirmation === "CONFIRME"
-                                    ? "Participation confirmée"
-                                    : "En attente de confirmation"}
-                                </Badge>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div>
-                            <h4 className="font-medium mb-2">Présentation</h4>
-                            <p className="text-gray-600 leading-relaxed">
-                              {exposant.description}
-                            </p>
-                          </div>
-
-                          {exposant.siteWeb && (
-                            <div>
-                              <h4 className="font-medium mb-2 flex items-center gap-2">
-                                <Globe className="h-4 w-4" />
-                                Site web
-                              </h4>
-                              <a
-                                href={exposant.siteWeb}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-blue-600 hover:text-blue-800 flex items-center gap-1 text-sm"
-                              >
-                                {exposant.siteWeb}
-                                <ExternalLink className="h-3 w-3" />
-                              </a>
-                            </div>
-                          )}
-
-                          <div>
-                            <h4 className="font-medium mb-3 flex items-center gap-2">
-                              <CalendarDays className="h-4 w-4" />
-                              Présent aux événements (
-                              {exposant.evenements.length})
-                            </h4>
-                            <div className="space-y-3">
-                              {exposant.evenements.map((evenement) => (
-                                <div
-                                  key={evenement.id}
-                                  className="bg-gray-50 rounded-lg p-4"
-                                >
-                                  <div className="font-medium text-sm mb-1">
-                                    {formatDate(evenement.date)}
-                                  </div>
-                                  <div className="text-xs text-gray-600 mb-2">
-                                    {formatTime(evenement.heureDebut)} -{" "}
-                                    {formatTime(evenement.heureFin)}
-                                  </div>
-                                  <div className="flex items-center gap-2 text-xs">
-                                    <Building2 className="h-3 w-3" />
-                                    <span>{evenement.lycee.nom}</span>
-                                    <Badge
-                                      variant={
-                                        evenement.lycee.type === "PUBLIC"
-                                          ? "default"
-                                          : "secondary"
-                                      }
-                                      className="text-xs"
-                                    >
-                                      {evenement.lycee.type === "PUBLIC"
-                                        ? "Public"
-                                        : "Privé"}
-                                    </Badge>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-
-                          <div className="flex gap-2 pt-4">
-                            <Button
-                              className="flex-1"
-                              onClick={() => setShowProgrammeComplet(true)}
-                            >
-                              <CalendarDays className="h-4 w-4 mr-2" />
-                              Voir le programme complet
-                            </Button>
-                            {exposant.siteWeb && (
-                              <Button variant="outline" asChild>
-                                <a
-                                  href={exposant.siteWeb}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                >
-                                  <ExternalLink className="h-4 w-4 mr-2" />
-                                  Site web
-                                </a>
-                              </Button>
-                            )}
-                          </div>
+                          {exposant.statutConfirmation === "CONFIRME"
+                            ? "Confirmé"
+                            : "En attente"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <input
+                          type="checkbox"
+                          checked={exposant.actif ?? true}
+                          onChange={async (e) => {
+                            const next = e.target.checked;
+                            try {
+                              const token = localStorage.getItem("adminToken");
+                              const res = await fetch(
+                                `/api/admin/exposants/${exposant.id}`,
+                                {
+                                  method: "PUT",
+                                  headers: {
+                                    "Content-Type": "application/json",
+                                    Authorization: `Bearer ${token}`,
+                                  },
+                                  body: JSON.stringify({
+                                    nom: exposant.nom,
+                                    description: exposant.description,
+                                    domaine: exposant.domaine,
+                                    logo: exposant.logo || "",
+                                    siteWeb: exposant.siteWeb || "",
+                                    statutConfirmation:
+                                      exposant.statutConfirmation,
+                                    actif: next,
+                                  }),
+                                }
+                              );
+                              if (res.ok) {
+                                setExposants((prev) =>
+                                  prev.map((x) =>
+                                    x.id === exposant.id
+                                      ? { ...x, actif: next }
+                                      : x
+                                  )
+                                );
+                              }
+                            } catch {}
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell className="max-w-xs truncate">
+                        {exposant.description}
+                      </TableCell>
+                      <TableCell>
+                        {new Date(exposant.createdAt).toLocaleDateString(
+                          "fr-FR"
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEdit(exposant)}
+                          >
+                            <Edit className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDelete(exposant.id)}
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
                         </div>
-                      </DialogContent>
-                    </Dialog>
-
-                    {/* Dialogue pour le programme complet */}
-                    <Dialog
-                      open={showProgrammeComplet}
-                      onOpenChange={setShowProgrammeComplet}
-                    >
-                      <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
-                        <DialogHeader>
-                          <DialogTitle className="flex items-center gap-2 animate-fadeIn">
-                            <CalendarDays className="h-5 w-5" />
-                            Programme Complet - {selectedExposant?.nom}
-                          </DialogTitle>
-                          <DialogDescription className="animate-fadeIn animate-delay-100">
-                            Détail des interventions et activités prévues
-                            pendant les portes ouvertes
-                          </DialogDescription>
-                        </DialogHeader>
-
-                        <ProgrammeCompletExposant exposant={selectedExposant} />
-                      </DialogContent>
-                    </Dialog>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </CardContent>
+        </Card>
       </div>
-    </Layout>
+
+      {/* Dialog pour ajouter/modifier un exposant */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {editingExposant ? "Modifier un exposant" : "Ajouter un exposant"}
+            </DialogTitle>
+            <DialogDescription>
+              {editingExposant
+                ? "Modifiez les informations de l'exposant ci-dessous"
+                : "Remplissez les informations pour ajouter un nouvel exposant"}
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="nom">Nom *</Label>
+                <Input
+                  id="nom"
+                  value={formData.nom}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, nom: e.target.value }))
+                  }
+                  placeholder="Nom de l'établissement"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="domaine">Domaine *</Label>
+                <Input
+                  id="domaine"
+                  value={formData.domaine}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      domaine: e.target.value,
+                    }))
+                  }
+                  placeholder="Ex: Ingénierie, Commerce, Art..."
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="description">Description *</Label>
+              <Textarea
+                id="description"
+                value={formData.description}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    description: e.target.value,
+                  }))
+                }
+                placeholder="Description de l'établissement et des formations proposées"
+                rows={4}
+                required
+              />
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="siteWeb">Site web</Label>
+                <Input
+                  id="siteWeb"
+                  type="url"
+                  value={formData.siteWeb}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      siteWeb: e.target.value,
+                    }))
+                  }
+                  placeholder="https://exemple.com"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="statutConfirmation">
+                  Statut de confirmation *
+                </Label>
+                <Select
+                  value={formData.statutConfirmation}
+                  onValueChange={(value: "CONFIRME" | "EN_ATTENTE") =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      statutConfirmation: value,
+                    }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sélectionner le statut" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="CONFIRME">Confirmé</SelectItem>
+                    <SelectItem value="EN_ATTENTE">En attente</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="logo">URL du logo</Label>
+              <Input
+                id="logo"
+                type="url"
+                value={formData.logo}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, logo: e.target.value }))
+                }
+                placeholder="URL du logo (facultatif)"
+              />
+            </div>
+
+            <div className="flex gap-2 pt-4">
+              <Button type="submit" className="flex-1" disabled={isSubmitting}>
+                {isSubmitting ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    {editingExposant ? "Mise à jour..." : "Création..."}
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4 mr-2" />
+                    {editingExposant ? "Mettre à jour" : "Créer"}
+                  </>
+                )}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setIsDialogOpen(false);
+                  resetForm();
+                }}
+              >
+                <X className="h-4 w-4 mr-2" />
+                Annuler
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+      <ConfirmDialog />
+    </div>
   );
 }
