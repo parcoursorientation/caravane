@@ -13,6 +13,7 @@ export async function GET(
       where: { id },
       include: {
         evenementExposants: {
+          where: { exposant: { actif: true } },
           include: {
             exposant: {
               include: {
