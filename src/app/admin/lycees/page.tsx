@@ -68,6 +68,7 @@ interface Lycee {
   type: "PUBLIC" | "PRIVE";
   description?: string;
   logo?: string;
+  actif?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -381,6 +382,7 @@ export default function AdminLyceesPage() {
                     <TableHead>Adresse</TableHead>
                     <TableHead>Type</TableHead>
                     <TableHead>Description</TableHead>
+                    <TableHead>Actif</TableHead>
                     <TableHead>Créé le</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
@@ -401,6 +403,46 @@ export default function AdminLyceesPage() {
                       </TableCell>
                       <TableCell className="max-w-xs truncate">
                         {lycee.description || "-"}
+                      </TableCell>
+                      <TableCell>
+                        {/* Toggle actif */}
+                        <input
+                          type="checkbox"
+                          checked={lycee.actif ?? true}
+                          onChange={async (e) => {
+                            const next = e.target.checked;
+                            try {
+                              const token = localStorage.getItem("adminToken");
+                              const res = await fetch(
+                                `/api/admin/lycees/${lycee.id}`,
+                                {
+                                  method: "PUT",
+                                  headers: {
+                                    "Content-Type": "application/json",
+                                    Authorization: `Bearer ${token}`,
+                                  },
+                                  body: JSON.stringify({
+                                    nom: lycee.nom,
+                                    adresse: lycee.adresse,
+                                    type: lycee.type,
+                                    description: lycee.description || "",
+                                    logo: lycee.logo || "",
+                                    actif: next,
+                                  }),
+                                }
+                              );
+                              if (res.ok) {
+                                setLycees((prev) =>
+                                  prev.map((l) =>
+                                    l.id === lycee.id
+                                      ? { ...l, actif: next }
+                                      : l
+                                  )
+                                );
+                              }
+                            } catch {}
+                          }}
+                        />
                       </TableCell>
                       <TableCell>
                         {new Date(lycee.createdAt).toLocaleDateString("fr-FR")}
