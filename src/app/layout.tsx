@@ -15,14 +15,27 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "ATLANTIS EVENTS - Portes Ouvertes pour l'Orientation",
-  description: "ATLANTIS EVENTS en partenariat avec l'AMCOPE organise des caravanes, des forums et des portes ouvertes d'orientation dans toutes les  villes du Maroc.",
-  keywords: ["ATLANTIS EVENTS", "orientation", "lycées", "Tanger", "portes ouvertes", "AMCOPE"],
+  description:
+    "ATLANTIS EVENTS en partenariat avec l'AMCOPE organise des caravanes, des forums et des portes ouvertes d'orientation dans toutes les  villes du Maroc.",
+  keywords: [
+    "ATLANTIS EVENTS",
+    "orientation",
+    "lycées",
+    "Tanger",
+    "portes ouvertes",
+    "AMCOPE",
+  ],
   authors: [{ name: "ATLANTIS EVENTS" }],
   openGraph: {
     title: "ATLANTIS EVENTS - Tour de Portes Ouvertes",
-    description: "Organisation des caravanes, des forums et des portes ouvertes d'orientation dans toutes les  villes du Maroc",
+    description:
+      "Organisation des caravanes, des forums et des portes ouvertes d'orientation dans toutes les  villes du Maroc",
     siteName: "ATLANTIS EVENTS",
     type: "website",
+  },
+  other: {
+    "color-scheme": "light dark",
+    "theme-color": "#ffffff",
   },
 };
 
@@ -33,6 +46,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr" suppressHydrationWarning>
+      <head>
+        <meta name="color-scheme" content="light only" />
+        <meta name="supported-color-schemes" content="light only" />
+      </head>
+
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
       >
