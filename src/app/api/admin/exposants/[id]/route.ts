@@ -1,11 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { NextRequest, NextResponse } from "next/server";
+import { db } from "@/lib/db";
 
 // Middleware d'authentification simplifié
 function authenticate(request: NextRequest): boolean {
   // Dans un environnement réel, on vérifierait le token JWT
-  const authHeader = request.headers.get('authorization');
-  return !!(authHeader && authHeader.startsWith('Bearer '));
+  const authHeader = request.headers.get("authorization");
+  return !!(authHeader && authHeader.startsWith("Bearer "));
 }
 
 // Interface pour le contexte des paramètres
@@ -19,53 +19,62 @@ interface RouteContext {
 export async function PUT(request: NextRequest, context: RouteContext) {
   try {
     if (!authenticate(request)) {
-      return NextResponse.json(
-        { error: 'Non autorisé' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
     const { id } = await context.params;
     const body = await request.json();
-    const { nom, description, domaine, logo, siteWeb, statutConfirmation } = body;
+    const {
+      nom,
+      description,
+      domaine,
+      logo,
+      siteWeb,
+      statutConfirmation,
+      actif,
+    } = body;
 
     // Validation
     if (!nom || !description || !domaine || !statutConfirmation) {
       return NextResponse.json(
-        { error: 'Nom, description, domaine et statut de confirmation sont requis' },
+        {
+          error:
+            "Nom, description, domaine et statut de confirmation sont requis",
+        },
         { status: 400 }
       );
     }
 
-    if (!['CONFIRME', 'EN_ATTENTE'].includes(statutConfirmation)) {
+    if (!["CONFIRME", "EN_ATTENTE"].includes(statutConfirmation)) {
       return NextResponse.json(
-        { error: 'Statut de confirmation doit être CONFIRME ou EN_ATTENTE' },
+        { error: "Statut de confirmation doit être CONFIRME ou EN_ATTENTE" },
         { status: 400 }
       );
     }
 
     // Validation du site web si fourni
-    if (siteWeb && !siteWeb.startsWith('http')) {
+    if (siteWeb && !siteWeb.startsWith("http")) {
       return NextResponse.json(
-        { error: 'URL du site web invalide' },
+        { error: "URL du site web invalide" },
         { status: 400 }
       );
     }
 
     // Vérifier si l'exposant existe
     const existingExposant = await db.exposant.findUnique({
-      where: { id }
+      where: { id },
     });
 
     if (!existingExposant) {
       return NextResponse.json(
-        { error: 'Exposant non trouvé' },
+        { error: "Exposant non trouvé" },
         { status: 404 }
       );
     }
 
     // Mapper le statut de confirmation au statut de paiement
-    const statutPaiement = statutConfirmation === 'CONFIRME' ? 'PAYE' : 'EN_ATTENTE';
+    const statutPaiement =
+      statutConfirmation === "CONFIRME" ? "PAYE" : "EN_ATTENTE";
 
     // Mise à jour de l'exposant
     const updatedExposant = await db.exposant.update({
@@ -76,14 +85,16 @@ export async function PUT(request: NextRequest, context: RouteContext) {
         domaine,
         logo: logo || null,
         siteWeb: siteWeb || null,
-        statutPaiement
-      }
+        statutPaiement,
+        ...(typeof actif === "boolean" ? { actif } : {}),
+      },
     });
 
     // Mapper le statut de paiement au statut de confirmation pour la réponse
     const responseData = {
       ...updatedExposant,
-      statutConfirmation: updatedExposant.statutPaiement === 'PAYE' ? 'CONFIRME' : 'EN_ATTENTE'
+      statutConfirmation:
+        updatedExposant.statutPaiement === "PAYE" ? "CONFIRME" : "EN_ATTENTE",
     };
 
     console.log(`Exposant mis à jour: ${nom} - ${new Date().toISOString()}`);
@@ -91,13 +102,12 @@ export async function PUT(request: NextRequest, context: RouteContext) {
     return NextResponse.json({
       success: true,
       data: responseData,
-      message: 'Exposant mis à jour avec succès'
+      message: "Exposant mis à jour avec succès",
     });
-
   } catch (error) {
-    console.error('Erreur lors de la mise à jour de l\'exposant:', error);
+    console.error("Erreur lors de la mise à jour de l'exposant:", error);
     return NextResponse.json(
-      { error: 'Erreur interne du serveur' },
+      { error: "Erreur interne du serveur" },
       { status: 500 }
     );
   }
@@ -107,42 +117,40 @@ export async function PUT(request: NextRequest, context: RouteContext) {
 export async function DELETE(request: NextRequest, context: RouteContext) {
   try {
     if (!authenticate(request)) {
-      return NextResponse.json(
-        { error: 'Non autorisé' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
     const { id } = await context.params;
 
     // Vérifier si l'exposant existe
     const existingExposant = await db.exposant.findUnique({
-      where: { id }
+      where: { id },
     });
 
     if (!existingExposant) {
       return NextResponse.json(
-        { error: 'Exposant non trouvé' },
+        { error: "Exposant non trouvé" },
         { status: 404 }
       );
     }
 
     // Suppression de l'exposant
     await db.exposant.delete({
-      where: { id }
+      where: { id },
     });
 
-    console.log(`Exposant supprimé: ${existingExposant.nom} - ${new Date().toISOString()}`);
+    console.log(
+      `Exposant supprimé: ${existingExposant.nom} - ${new Date().toISOString()}`
+    );
 
     return NextResponse.json({
       success: true,
-      message: 'Exposant supprimé avec succès'
+      message: "Exposant supprimé avec succès",
     });
-
   } catch (error) {
-    console.error('Erreur lors de la suppression de l\'exposant:', error);
+    console.error("Erreur lors de la suppression de l'exposant:", error);
     return NextResponse.json(
-      { error: 'Erreur interne du serveur' },
+      { error: "Erreur interne du serveur" },
       { status: 500 }
     );
   }
