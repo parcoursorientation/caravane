@@ -92,6 +92,8 @@ function InscriptionContent() {
     souhaiteNewsletter: false,
   });
 
+  const [selectedEvenementName, setSelectedEvenementName] =
+    useState<string>("");
   const [selectedEvenementId, setSelectedEvenementId] = useState<string>(
     evenementId || ""
   );
@@ -108,7 +110,13 @@ function InscriptionContent() {
       const response = await fetch("/api/evenements-public");
       if (response.ok) {
         const data = await response.json();
-        setEvenements(data.data);
+        const list: Evenement[] = data.data;
+        setEvenements(list);
+        // Pré-sélectionne le nom si un ID est dans l'URL
+        if (evenementId) {
+          const evt = list.find((e) => e.id === evenementId);
+          if (evt) setSelectedEvenementName(evt.nom || "Portes Ouvertes");
+        }
       } else {
         setError("Erreur lors du chargement des événements");
       }
@@ -213,6 +221,7 @@ function InscriptionContent() {
         body: JSON.stringify({
           ...formData,
           evenementId: selectedEvenementId,
+          evenementNom: selectedEvenementName, // utile côté admin/email si besoin
         }),
       });
 
@@ -233,6 +242,8 @@ function InscriptionContent() {
           accepteConditions: false,
           souhaiteNewsletter: false,
         });
+        setSelectedEvenementName("");
+        setSelectedEvenementId("");
       } else {
         const errorData = await response.json();
         setError(errorData.error || "Erreur lors de l'inscription");
@@ -413,24 +424,73 @@ function InscriptionContent() {
                       Sélection de l'événement
                     </h3>
                     <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="evenement">Événement *</Label>
-                        <Select
-                          value={selectedEvenementId}
-                          onValueChange={setSelectedEvenementId}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Choisissez un événement" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {evenements.map((evt) => (
-                              <SelectItem key={evt.id} value={evt.id}>
-                                {evt.nom ||
-                                  `Portes Ouvertes - ${evt.lycee.nom}`}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="evenement">Événement *</Label>
+                          <Select
+                            value={selectedEvenementName}
+                            onValueChange={(name) => {
+                              setSelectedEvenementName(name);
+                              // réinitialiser l'occurrence sélectionnée lorsque le nom change
+                              setSelectedEvenementId("");
+                            }}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Choisissez un événement" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {Array.from(
+                                new Map(
+                                  evenements.map((e) => [
+                                    (e.nom || "Portes Ouvertes").trim(),
+                                    (e.nom || "Portes Ouvertes").trim(),
+                                  ])
+                                ).values()
+                              ).map((name) => (
+                                <SelectItem key={name} value={name}>
+                                  {name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label htmlFor="occurrence">Lycée et date *</Label>
+                          <Select
+                            value={selectedEvenementId}
+                            onValueChange={setSelectedEvenementId}
+                            disabled={!selectedEvenementName}
+                          >
+                            <SelectTrigger>
+                              <SelectValue
+                                placeholder={
+                                  selectedEvenementName
+                                    ? "Choisissez le lycée et la date"
+                                    : "D'abord sélectionner l'événement"
+                                }
+                              />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {evenements
+                                .filter(
+                                  (e) =>
+                                    (e.nom || "Portes Ouvertes").trim() ===
+                                    selectedEvenementName
+                                )
+                                .map((evt) => (
+                                  <SelectItem key={evt.id} value={evt.id}>
+                                    {`${evt.lycee.nom} — ${new Date(
+                                      evt.date
+                                    ).toLocaleDateString(
+                                      "fr-FR"
+                                    )} ${formatHeure(
+                                      evt.heureDebut
+                                    )}-${formatHeure(evt.heureFin)}`}
+                                  </SelectItem>
+                                ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
                       </div>
 
                       {/* Affichage des détails de l'événement sélectionné */}
@@ -446,8 +506,7 @@ function InscriptionContent() {
                               return selectedEvent ? (
                                 <div className="space-y-2">
                                   <h4 className="font-medium text-blue-900">
-                                    {selectedEvent.nom ||
-                                      `Portes Ouvertes - ${selectedEvent.lycee.nom}`}
+                                    {selectedEvenementName}
                                   </h4>
                                   <div className="flex items-center gap-4 text-sm text-blue-700">
                                     <div className="flex items-center gap-1">
