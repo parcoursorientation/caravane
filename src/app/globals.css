@@ -179,6 +179,17 @@ body {
   --tw-ring-color: var(--ring);
 }
 
+/* Correction pour les listes déroulantes transparentes */
+.bg-popover {
+  background-color: var(--popover) !important;
+}
+
+[data-slot="select-content"] {
+  background-color: var(--popover) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
 .focus-visible\:ring-ring\/50:focus-visible {
   --tw-ring-color: rgba(var(--ring), 0.5);
 }
