@@ -111,9 +111,9 @@
 }
 
 .bg-gradient-safe {
-  background: linear-gradient(to right, #2563eb, #1d4ed8);
-  background: -webkit-linear-gradient(to right, #2563eb, #1d4ed8);
-  background: -moz-linear-gradient(to right, #2563eb, #1d4ed8);
+  background: linear-gradient(to right, #2563eb, #8b5cf6);
+  background: -webkit-linear-gradient(to right, #2563eb, #8b5cf6);
+  background: -moz-linear-gradient(to right, #2563eb, #8b5cf6);
 }
 
 .bg-blue-100-safe { background-color: #dbeafe; }
@@ -396,6 +396,178 @@ body {
 /* Animation pour le compteur */
 .counter-animate {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Animations pour le composant Sheet (menu mobile) */
+@keyframes slideInFromRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideOutToRight {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes slideInFromLeft {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideOutToLeft {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes slideInFromTop {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideOutToTop {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-100%);
+  }
+}
+
+@keyframes slideInFromBottom {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideOutToBottom {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes zoomIn {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes zoomOut {
+  from {
+    transform: scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* Classes d'animation pour le composant Sheet */
+[data-state="open"].animate-in {
+  animation-duration: 0.5s;
+  animation-fill-mode: both;
+}
+
+[data-state="closed"].animate-out {
+  animation-duration: 0.3s;
+  animation-fill-mode: both;
+}
+
+[data-state="closed"].slide-out-to-right {
+  animation-name: slideOutToRight;
+}
+
+[data-state="open"].slide-in-from-right {
+  animation-name: slideInFromRight;
+}
+
+[data-state="closed"].slide-out-to-left {
+  animation-name: slideOutToLeft;
+}
+
+[data-state="open"].slide-in-from-left {
+  animation-name: slideInFromLeft;
+}
+
+[data-state="closed"].slide-out-to-top {
+  animation-name: slideOutToTop;
+}
+
+[data-state="open"].slide-in-from-top {
+  animation-name: slideInFromTop;
+}
+
+[data-state="closed"].slide-out-to-bottom {
+  animation-name: slideOutToBottom;
+}
+
+[data-state="open"].slide-in-from-bottom {
+  animation-name: slideInFromBottom;
+}
+
+[data-state="closed"].zoom-out-95 {
+  animation-name: zoomOut;
+}
+
+[data-state="open"].zoom-in-95 {
+  animation-name: zoomIn;
+}
+
+[data-state="closed"].fade-out-0 {
+  animation-name: fadeOut;
+}
+
+[data-state="open"].fade-in-0 {
+  animation-name: fadeIn;
 }
 
 /* Loading spinner amélioré */
