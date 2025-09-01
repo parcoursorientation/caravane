@@ -3,7 +3,6 @@
 
 /* Définition des variables CSS */
 :root {
-  -webkit-tap-highlight-color: transparent !important;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   --background: #ffffff;
@@ -129,6 +128,99 @@
 body {
   background-color: var(--background);
   color: var(--foreground);
+}
+
+/* Classes utilitaires pour les composants UI */
+.bg-primary {
+  background-color: var(--primary);
+}
+
+.text-primary-foreground {
+  color: var(--primary-foreground);
+}
+
+.bg-secondary {
+  background-color: var(--secondary);
+}
+
+.text-secondary-foreground {
+  color: var(--secondary-foreground);
+}
+
+.bg-accent {
+  background-color: var(--accent);
+}
+
+.text-accent-foreground {
+  color: var(--accent-foreground);
+}
+
+.bg-destructive {
+  background-color: var(--destructive);
+}
+
+.text-muted-foreground {
+  color: var(--muted-foreground);
+}
+
+.bg-background {
+  background-color: var(--background);
+}
+
+.text-foreground {
+  color: var(--foreground);
+}
+
+.border-border {
+  border-color: var(--border);
+}
+
+.ring-ring {
+  --tw-ring-color: var(--ring);
+}
+
+.focus-visible\:ring-ring\/50:focus-visible {
+  --tw-ring-color: rgba(var(--ring), 0.5);
+}
+
+.focus-visible\:ring-\[3px\]:focus-visible {
+  --tw-ring-width: 3px;
+}
+
+.hover\:bg-primary\/90:hover {
+  background-color: rgba(var(--primary), 0.9);
+}
+
+.hover\:bg-secondary\/80:hover {
+  background-color: rgba(var(--secondary), 0.8);
+}
+
+.hover\:bg-accent:hover {
+  background-color: var(--accent);
+}
+
+.hover\:text-accent-foreground:hover {
+  color: var(--accent-foreground);
+}
+
+.dark\:hover\:bg-accent\/50:hover {
+  background-color: rgba(var(--accent), 0.5);
+}
+
+.dark\:bg-input\/30 {
+  background-color: rgba(var(--input), 0.3);
+}
+
+.dark\:border-input {
+  border-color: var(--input);
+}
+
+.dark\:hover\:bg-input\/50:hover {
+  background-color: rgba(var(--input), 0.5);
+}
+
+.shadow-xs {
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
 }
 
 /* Animations personnalisées */
