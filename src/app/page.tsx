@@ -62,7 +62,6 @@ export default function Home() {
             </Link>
             <Link href="/inscription">
               <Button
-                variant="outline"
                 size="lg"
                 className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto button-animate hover-lift"
               >
