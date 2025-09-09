@@ -424,73 +424,69 @@ function InscriptionContent() {
                       Sélection de l'événement
                     </h3>
                     <div className="space-y-4">
-                      <div className="grid md:grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="evenement">Événement *</Label>
-                          <Select
-                            value={selectedEvenementName}
-                            onValueChange={(name) => {
-                              setSelectedEvenementName(name);
-                              // réinitialiser l'occurrence sélectionnée lorsque le nom change
-                              setSelectedEvenementId("");
-                            }}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Choisissez un événement" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {Array.from(
-                                new Map(
-                                  evenements.map((e) => [
-                                    (e.nom || "Portes Ouvertes").trim(),
-                                    (e.nom || "Portes Ouvertes").trim(),
-                                  ])
-                                ).values()
-                              ).map((name) => (
-                                <SelectItem key={name} value={name}>
-                                  {name}
+                      <div>
+                        <Label htmlFor="evenement">Événement *</Label>
+                        <Select
+                          value={selectedEvenementName}
+                          onValueChange={(name) => {
+                            setSelectedEvenementName(name);
+                            // réinitialiser l'occurrence sélectionnée lorsque le nom change
+                            setSelectedEvenementId("");
+                          }}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Choisissez un événement" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {Array.from(
+                              new Map(
+                                evenements.map((e) => [
+                                  (e.nom || "Portes Ouvertes").trim(),
+                                  (e.nom || "Portes Ouvertes").trim(),
+                                ])
+                              ).values()
+                            ).map((name) => (
+                              <SelectItem key={name} value={name}>
+                                {name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor="occurrence">Lycée et date *</Label>
+                        <Select
+                          value={selectedEvenementId}
+                          onValueChange={setSelectedEvenementId}
+                          disabled={!selectedEvenementName}
+                        >
+                          <SelectTrigger>
+                            <SelectValue
+                              placeholder={
+                                selectedEvenementName
+                                  ? "Choisissez le lycée et la date"
+                                  : "D'abord sélectionner l'événement"
+                              }
+                            />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {evenements
+                              .filter(
+                                (e) =>
+                                  (e.nom || "Portes Ouvertes").trim() ===
+                                  selectedEvenementName
+                              )
+                              .map((evt) => (
+                                <SelectItem key={evt.id} value={evt.id}>
+                                  {`${evt.lycee.nom} — ${new Date(
+                                    evt.date
+                                  ).toLocaleDateString("fr-FR")} ${formatHeure(
+                                    evt.heureDebut
+                                  )}-${formatHeure(evt.heureFin)}`}
                                 </SelectItem>
                               ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div>
-                          <Label htmlFor="occurrence">Lycée et date *</Label>
-                          <Select
-                            value={selectedEvenementId}
-                            onValueChange={setSelectedEvenementId}
-                            disabled={!selectedEvenementName}
-                          >
-                            <SelectTrigger>
-                              <SelectValue
-                                placeholder={
-                                  selectedEvenementName
-                                    ? "Choisissez le lycée et la date"
-                                    : "D'abord sélectionner l'événement"
-                                }
-                              />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {evenements
-                                .filter(
-                                  (e) =>
-                                    (e.nom || "Portes Ouvertes").trim() ===
-                                    selectedEvenementName
-                                )
-                                .map((evt) => (
-                                  <SelectItem key={evt.id} value={evt.id}>
-                                    {`${evt.lycee.nom} — ${new Date(
-                                      evt.date
-                                    ).toLocaleDateString(
-                                      "fr-FR"
-                                    )} ${formatHeure(
-                                      evt.heureDebut
-                                    )}-${formatHeure(evt.heureFin)}`}
-                                  </SelectItem>
-                                ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
+                          </SelectContent>
+                        </Select>
                       </div>
 
                       {/* Affichage des détails de l'événement sélectionné */}
