@@ -72,6 +72,7 @@ model Evenement {
   heureDebut String // Format HH:MM (ex: "09:00")
   heureFin   String // Format HH:MM (ex: "17:00")
   ville      String? // Nouveau champ pour la ville
+  actif      Boolean   @default(true) // Champ pour activer/désactiver l'événement
   lyceeId    String
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
