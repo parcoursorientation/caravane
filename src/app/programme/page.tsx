@@ -37,6 +37,7 @@ interface Evenement {
   heureDebut: string;
   heureFin: string;
   ville?: string;
+  actif: boolean;
   lycee: {
     id: string;
     nom: string;
