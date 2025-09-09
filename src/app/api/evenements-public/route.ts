@@ -1,27 +1,32 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { NextRequest, NextResponse } from "next/server";
+import { db } from "@/lib/db";
 
 // GET /api/evenements-public - Récupérer tous les événements publics avec le nombre d'exposants
 export async function GET(request: NextRequest) {
   try {
-    console.log('🔄 GET /api/evenements-public - Récupération des événements publics...');
+    console.log(
+      "🔄 GET /api/evenements-public - Récupération des événements publics..."
+    );
 
     const evenements = await db.evenement.findMany({
+      where: {
+        actif: true, // Filtrer seulement les événements actifs
+      },
       include: {
         lycee: true,
         evenementExposants: {
           include: {
-            exposant: true
-          }
-        }
+            exposant: true,
+          },
+        },
       },
       orderBy: {
-        date: 'asc'
-      }
+        date: "asc",
+      },
     });
 
     // Transformer les données pour inclure le nombre d'exposants
-    const evenementsAvecExposants = evenements.map(evenement => ({
+    const evenementsAvecExposants = evenements.map((evenement) => ({
       id: evenement.id,
       nom: evenement.nom,
       date: evenement.date.toISOString(),
@@ -30,12 +35,13 @@ export async function GET(request: NextRequest) {
       heureDebut: evenement.heureDebut,
       heureFin: evenement.heureFin,
       ville: evenement.ville,
+      actif: evenement.actif,
       lycee: {
         id: evenement.lycee.id,
         nom: evenement.lycee.nom,
-        adresse: evenement.lycee.adresse
+        adresse: evenement.lycee.adresse,
       },
-      exposantsCount: evenement.evenementExposants.length
+      exposantsCount: evenement.evenementExposants.length,
     }));
 
     console.log(`✅ ${evenementsAvecExposants.length} événements récupérés`);
@@ -43,13 +49,15 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: evenementsAvecExposants,
-      total: evenementsAvecExposants.length
+      total: evenementsAvecExposants.length,
     });
-
   } catch (error) {
-    console.error('❌ Erreur lors de la récupération des événements publics:', error);
+    console.error(
+      "❌ Erreur lors de la récupération des événements publics:",
+      error
+    );
     return NextResponse.json(
-      { error: 'Erreur interne du serveur' },
+      { error: "Erreur interne du serveur" },
       { status: 500 }
     );
   }
