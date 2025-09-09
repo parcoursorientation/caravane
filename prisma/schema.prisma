@@ -386,3 +386,13 @@ enum TypeProgramme {
   PARTENARIAT
   CLOTURE
 }
+
+model ParametreSite {
+  id        String   @id @default(cuid())
+  cle       String   @unique
+  valeur    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("parametres_site")
+}
