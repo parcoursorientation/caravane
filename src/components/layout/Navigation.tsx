@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,11 @@ import { Menu, X } from "lucide-react";
 
 interface NavigationProps {
   isAdmin?: boolean;
+}
+
+interface ParametresNavigation {
+  afficherPartenaires: boolean;
+  afficherExposants: boolean;
 }
 
 const navigationItems = [
@@ -49,9 +54,52 @@ const adminNavigationItems = [
 
 export default function Navigation({ isAdmin = false }: NavigationProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [parametres, setParametres] = useState<ParametresNavigation>({
+    afficherPartenaires: true,
+    afficherExposants: true,
+  });
   const pathname = usePathname();
 
-  const items = isAdmin ? adminNavigationItems : navigationItems;
+  useEffect(() => {
+    // Charger les paramètres de navigation seulement pour le site public
+    if (!isAdmin) {
+      fetchParametresNavigation();
+    }
+  }, [isAdmin]);
+
+  const fetchParametresNavigation = async () => {
+    try {
+      const response = await fetch("/api/parametres-publics");
+      if (response.ok) {
+        const data = await response.json();
+        setParametres(data.data);
+      }
+    } catch (error) {
+      console.error(
+        "Erreur lors du chargement des paramètres de navigation:",
+        error
+      );
+    }
+  };
+
+  // Filtrer les éléments de navigation selon les paramètres
+  const getFilteredNavigationItems = () => {
+    if (isAdmin) {
+      return adminNavigationItems;
+    }
+
+    return navigationItems.filter((item) => {
+      if (item.href === "/partenaires" && !parametres.afficherPartenaires) {
+        return false;
+      }
+      if (item.href === "/exposants" && !parametres.afficherExposants) {
+        return false;
+      }
+      return true;
+    });
+  };
+
+  const items = getFilteredNavigationItems();
 
   const isActive = (href: string) => {
     if (href === "/") {
