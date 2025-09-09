@@ -5,27 +5,27 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { 
-  Menu, 
-  X, 
-  LayoutDashboard, 
-  Building, 
-  Calendar, 
-  Users, 
-  MessageSquare, 
-  Handshake, 
-  Image, 
-  GalleryVerticalEnd, 
-  Timer, 
-  User, 
-  BarChart3, 
-  CalendarDays, 
-  Settings, 
-  ChevronLeft, 
+import {
+  Menu,
+  X,
+  LayoutDashboard,
+  Building,
+  Calendar,
+  Users,
+  MessageSquare,
+  Handshake,
+  Image,
+  GalleryVerticalEnd,
+  Timer,
+  User,
+  BarChart3,
+  CalendarDays,
+  Settings,
+  ChevronLeft,
   ChevronRight,
   LogOut,
   Home,
-  GraduationCap
+  GraduationCap,
 } from "lucide-react";
 
 interface AdminSidebarProps {
@@ -34,104 +34,110 @@ interface AdminSidebarProps {
 }
 
 const adminNavigationItems = [
-  { 
-    href: "/admin", 
-    label: "Tableau de bord", 
+  {
+    href: "/admin",
+    label: "Tableau de bord",
     icon: LayoutDashboard,
-    description: "Vue d'ensemble"
+    description: "Vue d'ensemble",
   },
-  { 
-    href: "/admin/lycees", 
-    label: "Lycées", 
+  {
+    href: "/admin/lycees",
+    label: "Lycées",
     icon: GraduationCap,
-    description: "Gestion des lycées"
+    description: "Gestion des lycées",
   },
-  { 
-    href: "/admin/programmes-lycees", 
-    label: "Programmes Lycées", 
+  {
+    href: "/admin/programmes-lycees",
+    label: "Programmes Lycées",
     icon: Calendar,
-    description: "Programmes par lycée"
+    description: "Programmes par lycée",
   },
-  { 
-    href: "/admin/exposants", 
-    label: "Exposants", 
+  {
+    href: "/admin/exposants",
+    label: "Exposants",
     icon: Building,
-    description: "Gestion des exposants"
+    description: "Gestion des exposants",
   },
-  { 
-    href: "/admin/evenements", 
-    label: "Événements", 
+  {
+    href: "/admin/evenements",
+    label: "Événements",
     icon: CalendarDays,
-    description: "Gestion des événements"
+    description: "Gestion des événements",
   },
-  { 
-    href: "/admin/inscriptions", 
-    label: "Inscriptions", 
+  {
+    href: "/admin/inscriptions",
+    label: "Inscriptions",
     icon: Users,
-    description: "Gestion des inscriptions"
+    description: "Gestion des inscriptions",
   },
-  { 
-    href: "/admin/contact-messages", 
-    label: "Messages Contact", 
+  {
+    href: "/admin/contact-messages",
+    label: "Messages Contact",
     icon: MessageSquare,
-    description: "Messages des visiteurs"
+    description: "Messages des visiteurs",
   },
-  { 
-    href: "/admin/partenaires", 
-    label: "Partenaires", 
+  {
+    href: "/admin/partenaires",
+    label: "Partenaires",
     icon: Handshake,
-    description: "Gestion des partenaires"
+    description: "Gestion des partenaires",
   },
-  { 
-    href: "/admin/galerie", 
-    label: "Médias", 
+  {
+    href: "/admin/galerie",
+    label: "Médias",
     icon: Image,
-    description: "Gestion des médias"
+    description: "Gestion des médias",
   },
-  { 
-    href: "/admin/galeries-evenements", 
-    label: "Galeries Événements", 
+  {
+    href: "/admin/galeries-evenements",
+    label: "Galeries Événements",
     icon: GalleryVerticalEnd,
-    description: "Galeries par événement"
+    description: "Galeries par événement",
   },
-  { 
-    href: "/admin/compte-a-rebours", 
-    label: "Compte à rebours", 
+  {
+    href: "/admin/compte-a-rebours",
+    label: "Compte à rebours",
     icon: Timer,
-    description: "Gestion du compte à rebours"
+    description: "Gestion du compte à rebours",
   },
-  { 
-    href: "/admin/utilisateurs", 
-    label: "Utilisateurs", 
+  {
+    href: "/admin/utilisateurs",
+    label: "Utilisateurs",
     icon: User,
-    description: "Gestion des utilisateurs"
+    description: "Gestion des utilisateurs",
   },
-  { 
-    href: "/admin/statistiques", 
-    label: "Statistiques", 
+  {
+    href: "/admin/statistiques",
+    label: "Statistiques",
     icon: BarChart3,
-    description: "Statistiques et rapports"
+    description: "Statistiques et rapports",
   },
-  { 
-    href: "/admin/calendrier", 
-    label: "Calendrier", 
+  {
+    href: "/admin/calendrier",
+    label: "Calendrier",
     icon: CalendarDays,
-    description: "Calendrier des événements"
+    description: "Calendrier des événements",
   },
-  { 
-    href: "/admin/settings", 
-    label: "Paramètres", 
+  {
+    href: "/admin/parametres-navigation",
+    label: "Navigation",
     icon: Settings,
-    description: "Configuration du système"
+    description: "Paramètres de navigation",
+  },
+  {
+    href: "/admin/settings",
+    label: "Paramètres",
+    icon: Settings,
+    description: "Configuration du système",
   },
 ];
 
 const secondaryNavigationItems = [
-  { 
-    href: "/", 
-    label: "Retour au site", 
+  {
+    href: "/",
+    label: "Retour au site",
     icon: Home,
-    description: "Voir le site public"
+    description: "Voir le site public",
   },
 ];
 
@@ -173,7 +179,11 @@ export default function AdminSidebar({ isOpen, onToggle }: AdminSidebarProps) {
           onClick={onToggle}
           className="hidden lg:flex"
         >
-          {isOpen ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+          {isOpen ? (
+            <ChevronLeft className="h-4 w-4" />
+          ) : (
+            <ChevronRight className="h-4 w-4" />
+          )}
         </Button>
       </div>
 
@@ -197,13 +207,15 @@ export default function AdminSidebar({ isOpen, onToggle }: AdminSidebarProps) {
                   }`}
                   title={!isOpen ? item.label : undefined}
                 >
-                  <Icon className={`h-5 w-5 ${isOpen ? 'mr-3' : 'mx-auto'}`} />
+                  <Icon className={`h-5 w-5 ${isOpen ? "mr-3" : "mx-auto"}`} />
                   {isOpen && (
                     <div className="flex-1">
                       <div className="flex items-center justify-between">
                         <span>{item.label}</span>
                       </div>
-                      <div className="text-xs text-gray-500 mt-0.5">{item.description}</div>
+                      <div className="text-xs text-gray-500 mt-0.5">
+                        {item.description}
+                      </div>
                     </div>
                   )}
                 </Link>
@@ -230,13 +242,15 @@ export default function AdminSidebar({ isOpen, onToggle }: AdminSidebarProps) {
                   }`}
                   title={!isOpen ? item.label : undefined}
                 >
-                  <Icon className={`h-5 w-5 ${isOpen ? 'mr-3' : 'mx-auto'}`} />
+                  <Icon className={`h-5 w-5 ${isOpen ? "mr-3" : "mx-auto"}`} />
                   {isOpen && (
                     <div className="flex-1">
                       <div className="flex items-center justify-between">
                         <span>{item.label}</span>
                       </div>
-                      <div className="text-xs text-gray-500 mt-0.5">{item.description}</div>
+                      <div className="text-xs text-gray-500 mt-0.5">
+                        {item.description}
+                      </div>
                     </div>
                   )}
                 </Link>
@@ -280,9 +294,11 @@ export default function AdminSidebar({ isOpen, onToggle }: AdminSidebarProps) {
   return (
     <>
       {/* Desktop Sidebar */}
-      <div className={`hidden lg:flex lg:flex-shrink-0 transition-all duration-300 ${
-        isOpen ? 'lg:w-64' : 'lg:w-16'
-      }`}>
+      <div
+        className={`hidden lg:flex lg:flex-shrink-0 transition-all duration-300 ${
+          isOpen ? "lg:w-64" : "lg:w-16"
+        }`}
+      >
         <div className="flex flex-col w-full bg-white border-r border-gray-200 h-screen sticky top-0">
           <SidebarContent />
         </div>
