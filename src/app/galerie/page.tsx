@@ -45,7 +45,11 @@ interface Photo {
   description?: string;
   fichier: string;
   type: string;
-  evenement: string;
+  evenement: {
+    nom: string;
+    date: string | null;
+    lieu: string;
+  };
   date: string;
   lieu: string;
   categorie: string;
@@ -245,7 +249,11 @@ export default function GaleriePage() {
 
     // Filtrer par année
     if (anneeFilter !== "TOUS") {
-      filtered = filtered.filter((photo) => photo.date.startsWith(anneeFilter));
+      filtered = filtered.filter((photo) =>
+        (photo.evenement.date ? photo.evenement.date : photo.date).startsWith(
+          anneeFilter
+        )
+      );
     }
 
     setFilteredPhotos(filtered);
@@ -267,13 +275,17 @@ export default function GaleriePage() {
   };
 
   const getUniqueAnnees = () => {
-    const annees = photos.map((photo) => photo.date.substring(0, 4));
+    const annees = photos.map((photo) =>
+      photo.evenement.date
+        ? photo.evenement.date.substring(0, 4)
+        : photo.date.substring(0, 4)
+    );
     return [...new Set(annees)].sort((a, b) => b.localeCompare(a));
   };
 
   const groupPhotosByEvent = () => {
     const grouped = filteredPhotos.reduce((acc, photo) => {
-      const eventKey = photo.evenement;
+      const eventKey = photo.evenement.nom;
       if (!acc[eventKey]) {
         acc[eventKey] = [];
       }
@@ -281,10 +293,15 @@ export default function GaleriePage() {
       return acc;
     }, {} as Record<string, Photo[]>);
 
-    return Object.entries(grouped).sort(([a], [b]) => {
-      // Trier par date (extraire la date du nom de l'événement)
-      const dateA = a.split(" - ")[0];
-      const dateB = b.split(" - ")[0];
+    return Object.entries(grouped).sort(([a, photosA], [b, photosB]) => {
+      // Trier par date d'événement (prendre la date du premier photo de chaque groupe)
+      const dateA = photosA[0]?.evenement.date;
+      const dateB = photosB[0]?.evenement.date;
+
+      if (!dateA && !dateB) return 0;
+      if (!dateA) return 1;
+      if (!dateB) return -1;
+
       return new Date(dateB).getTime() - new Date(dateA).getTime();
     });
   };
@@ -422,19 +439,22 @@ export default function GaleriePage() {
                   </div>
                 </div>
                 <CardContent className="p-4">
-                  <h3 className="font-medium text-sm mb-1 line-clamp-1">
-                    {photo.titre}
-                  </h3>
-                  <p className="text-xs text-gray-500 mb-2 line-clamp-2">
-                    {photo.description}
-                  </p>
-                  <div className="flex items-center gap-1 text-xs text-gray-400">
-                    <CalendarDays className="h-3 w-3" />
-                    <span>{formatDate(photo.date)}</span>
-                  </div>
-                  <div className="flex items-center gap-1 text-xs text-gray-400">
-                    <MapPin className="h-3 w-3" />
-                    <span>{photo.lieu}</span>
+                  <div className="space-y-2">
+                    <h3 className="font-medium text-sm text-gray-900 truncate">
+                      {photo.evenement.nom}
+                    </h3>
+                    <div className="flex items-center gap-1 text-xs text-gray-500">
+                      <CalendarDays className="h-3 w-3" />
+                      <span>
+                        {photo.evenement.date
+                          ? formatDate(photo.evenement.date)
+                          : "Date inconnue"}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1 text-xs text-gray-500">
+                      <MapPin className="h-3 w-3" />
+                      <span className="truncate">{photo.evenement.lieu}</span>
+                    </div>
                   </div>
 
                   <Dialog>
@@ -510,12 +530,25 @@ export default function GaleriePage() {
                         </div>
                       </div>
                       <CardContent className="p-3">
-                        <h3 className="font-medium text-sm mb-1 line-clamp-1">
-                          {photo.titre}
-                        </h3>
-                        <p className="text-xs text-gray-500 mb-2 line-clamp-1">
-                          {photo.description}
-                        </p>
+                        <div className="space-y-1 mb-3">
+                          <h3 className="font-medium text-sm text-gray-900 truncate">
+                            {photo.evenement.nom}
+                          </h3>
+                          <div className="flex items-center gap-1 text-xs text-gray-500">
+                            <CalendarDays className="h-3 w-3" />
+                            <span>
+                              {photo.evenement.date
+                                ? formatDate(photo.evenement.date)
+                                : "Date inconnue"}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1 text-xs text-gray-500">
+                            <MapPin className="h-3 w-3" />
+                            <span className="truncate">
+                              {photo.evenement.lieu}
+                            </span>
+                          </div>
+                        </div>
 
                         <Dialog>
                           <DialogTrigger asChild>
