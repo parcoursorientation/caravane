@@ -41,19 +41,19 @@ export default function Footer({ isAdmin = false }: FooterProps) {
             <div className="space-y-3 text-gray-400">
               <div className="flex items-center">
                 <Phone className="h-4 w-4 mr-2" />
-                <span>+212 539-34-56-78</span>
+                <span>+212 679-55-28-24</span>
               </div>
               <div className="flex items-center">
                 <Phone className="h-4 w-4 mr-2" />
-                <span>+212 661-23-45-67</span>
+                <span>+212 628-47-31-53</span>
               </div>
               <div className="flex items-center">
                 <Mail className="h-4 w-4 mr-2" />
-                <span>info@atlantisevents.ma</span>
+                <span>info@atlantis-events.pro</span>
               </div>
               <div className="flex items-center">
                 <Mail className="h-4 w-4 mr-2" />
-                <span>contact@atlantisevents.ma</span>
+                <span>contact@atlantis-events.pro</span>
               </div>
             </div>
           </div>
