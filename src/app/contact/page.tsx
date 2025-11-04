@@ -357,9 +357,9 @@ export default function ContactPage() {
                   <Mail className="h-5 w-5 text-blue-600 mt-0.5" />
                   <div>
                     <div className="font-medium">Email</div>
-                    <div className="text-gray-600">info@atlantisevents.ma</div>
+                    <div className="text-gray-600">info@atlantis-events.pro</div>
                     <div className="text-gray-600 text-sm">
-                      contact@atlantisevents.ma
+                      contact@atlantis-events.pro
                     </div>
                   </div>
                 </div>
@@ -368,9 +368,9 @@ export default function ContactPage() {
                   <Phone className="h-5 w-5 text-blue-600 mt-0.5" />
                   <div>
                     <div className="font-medium">Téléphone</div>
-                    <div className="text-gray-600">+212 539-34-56-78</div>
+                    <div className="text-gray-600">+212 679-55-28-24</div>
                     <div className="text-gray-600 text-sm">
-                      +212 661-23-45-67
+                      +212 628-47-31-53
                     </div>
                   </div>
                 </div>
