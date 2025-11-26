@@ -47,13 +47,10 @@ export default function Footer({ isAdmin = false }: FooterProps) {
                 <Phone className="h-4 w-4 mr-2" />
                 <span>+212 628-47-31-53</span>
               </div>
+              
               <div className="flex items-center">
                 <Mail className="h-4 w-4 mr-2" />
-                <span>info@atlantis-events.pro</span>
-              </div>
-              <div className="flex items-center">
-                <Mail className="h-4 w-4 mr-2" />
-                <span>contact@atlantis-events.pro</span>
+                <span>Atlantis-events@outlook.com</span>
               </div>
             </div>
           </div>
@@ -89,7 +86,7 @@ export default function Footer({ isAdmin = false }: FooterProps) {
               <div className="flex items-start">
                 <MapPin className="h-4 w-4 mr-2 mt-1 flex-shrink-0" />
                 <span className="text-gray-400 text-sm">
-                  123, Avenue Mohammed VI<br />
+                  Bureau N°2 Sise Etg 1 Rue 71 N°9 Quartier Belle vue,<br />
                   Tanger 90000, Maroc
                 </span>
               </div>
