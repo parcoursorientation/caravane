@@ -357,10 +357,8 @@ export default function ContactPage() {
                   <Mail className="h-5 w-5 text-blue-600 mt-0.5" />
                   <div>
                     <div className="font-medium">Email</div>
-                    <div className="text-gray-600">info@atlantis-events.pro</div>
-                    <div className="text-gray-600 text-sm">
-                      contact@atlantis-events.pro
-                    </div>
+                    <div className="text-gray-600">Atlantis-events@outlook.com</div>
+                    
                   </div>
                 </div>
 
@@ -380,7 +378,7 @@ export default function ContactPage() {
                   <div>
                     <div className="font-medium">Adresse</div>
                     <div className="text-gray-600">
-                      123, Avenue Mohammed VI
+                      Bureau N°2 Sise Etg 1 Rue 71 N°9 Quartier Belle vue,
                       <br />
                       Tanger 90000, Maroc
                     </div>
