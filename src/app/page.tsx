@@ -73,6 +73,19 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Affiche Forum 2026 */}
+      <section className="py-8 md:py-12  bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-center">
+            <img
+              src="https://www.parcours-orientation.net/storage/images/forum2026/affiche-forum2026.png"
+              alt="Affiche Forum 2026"
+              className="max-w-full h-auto rounded-lg shadow-lg"
+            />
+          </div>
+        </div>
+      </section>
+
       {/* Organisateurs */}
       <section className="py-0 md:py-0 bg-white">
         <div className="py-4 bg-gray-50">
