@@ -78,7 +78,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-center">
             <img
-              src="https://www.parcours-orientation.net/storage/images/forum2026/affiche-forum2026.png"
+              src="https://www.parcours-orientation.net/storage/images/forum2026/affiche-forum2026.jpg"
               alt="Affiche Forum 2026"
               className="max-w-full h-auto rounded-lg shadow-lg"
             />
